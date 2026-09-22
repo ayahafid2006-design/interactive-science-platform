@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>البوابات العلمية | Scientific Portals</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- 1. Glassmorphism Language Toggle -->
+    <button class="lang-toggle"><strong>AR</strong> <span style="opacity: 0.5; font-weight: normal;">| EN</span></button>
+
+    <div class="thematic-bg bg-chemistry"></div>
+    <div class="thematic-bg bg-physics"></div>
+    
+    <main class="main-wrapper">
+        <!-- 2. Premium Main Branding Header -->
+        <div class="brand-header">
+            <h1 data-i18n="header_title">المنصة العلمية التفاعلية</h1>
+            <p data-i18n="header_subtitle">اختر مسارك العلمي للبدء</p>
+        </div>
+
+        <div class="portal-container">
+            <!-- Chemistry Portal (Right Side due to RTL) -->
+            <div class="portal chemistry" data-target="/chemistry">
+                <div class="glow-orb"></div>
+                <div class="portal-content">
+                    <!-- 3. Hero Icon -->
+                    <i class="fa-solid fa-flask portal-icon"></i>
+                    <h2 data-i18n="chem_main">الكيمياء</h2>
+                    <!-- 4. Global Typography Touch -->
+                    <span class="en-subtitle" data-i18n="chem_sub">CHEMISTRY</span>
+                </div>
+            </div>
+            
+            <!-- Physics Portal (Left Side due to RTL) -->
+            <div class="portal physics" data-target="/physics">
+                <div class="glow-orb"></div>
+                <div class="portal-content">
+                    <!-- 3. Hero Icon -->
+                    <i class="fa-solid fa-atom portal-icon"></i>
+                    <h2 data-i18n="phys_main">الفيزياء</h2>
+                    <!-- 4. Global Typography Touch -->
+                    <span class="en-subtitle" data-i18n="phys_sub">PHYSICS</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

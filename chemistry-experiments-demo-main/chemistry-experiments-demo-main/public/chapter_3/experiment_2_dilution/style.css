@@ -1,0 +1,373 @@
+:root {
+    --bg-dark: #f8f9fa;
+    --bench-bg: transparent;
+    --panel-bg: #ffffff;
+    --accent: #2563eb;
+    --text-main: #1f2937;
+    --text-muted: #4b5563;
+    --border-dim: #e5e7eb;
+    --font-mono: 'Roboto Mono', monospace;
+    --font-sans: 'Inter', sans-serif;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-dark);
+    background-image: 
+        linear-gradient(#e5e7eb 1px, transparent 1px),
+        linear-gradient(90deg, #e5e7eb 1px, transparent 1px);
+    background-size: 20px 20px;
+    color: var(--text-main);
+    font-family: var(--font-sans);
+    overflow: hidden;
+}
+
+.container {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: flex-start;
+    width: 100%;
+    height: 100%;
+}
+
+.lab-bench {
+    width: 70%;
+    display: flex;
+    flex-direction: column;
+    padding: 2rem;
+    box-sizing: border-box;
+    background: transparent;
+}
+
+.experiment-title {
+    text-align: center;
+    font-size: 1.8rem;
+    color: var(--accent);
+    margin-bottom: 1.5rem;
+    margin-top: 0;
+    font-weight: 700;
+}
+
+.header-area {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.back-btn {
+    position: absolute !important;
+    top: 40px !important;
+    left: 40px !important;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #ffffff;
+    border: 1px solid var(--border-dim);
+    border-radius: 8px;
+    color: var(--text-main);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.back-btn:hover {
+    background: #f3f4f6;
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.equation-container {
+    padding: 1rem 2rem;
+    background: #ffffff;
+    border: 1px solid var(--border-dim);
+    border-radius: 8px;
+    font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+    font-size: 1.4rem;
+    color: var(--accent);
+    min-width: 400px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    letter-spacing: normal;
+    word-spacing: normal;
+}
+
+.glassware-area {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 4rem;
+}
+
+/* Flask and Bottle CSS Art */
+.flask-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.water-bottle {
+    width: 60px;
+    height: 100px;
+    position: relative;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.bottle-cap {
+    width: 20px;
+    height: 15px;
+    background: #374151;
+    border-radius: 3px 3px 0 0;
+}
+
+.bottle-neck {
+    width: 15px;
+    height: 15px;
+    background: rgba(255, 255, 255, 0.8);
+    border: 2px solid #374151;
+    border-bottom: none;
+    border-top: none;
+}
+
+.bottle-body {
+    width: 50px;
+    height: 70px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid #374151;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #374151;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.water-drop {
+    position: absolute;
+    bottom: -15px;
+    width: 8px;
+    height: 12px;
+    background: #3b82f6;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    opacity: 0;
+}
+
+.drop-animate {
+    animation: dropFall 0.5s ease-in;
+}
+
+@keyframes dropFall {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(40px) scale(0.5); opacity: 0; }
+}
+
+.flask {
+    width: 140px;
+    height: 180px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.flask-neck {
+    width: 30px;
+    height: 60px;
+    border: 3px solid #374151;
+    border-bottom: none;
+    border-top: none;
+    background: rgba(255, 255, 255, 0.5);
+    position: relative;
+}
+
+.flask-neck::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -10px;
+    width: 50px;
+    height: 10px;
+    border-radius: 50%;
+    border: 3px solid #374151;
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.flask-body {
+    width: 140px;
+    height: 120px;
+    border: 3px solid #374151;
+    border-top: none;
+    border-radius: 50% 50% 20px 20px / 100% 100% 20px 20px;
+    background: rgba(255, 255, 255, 0.5);
+    position: relative;
+    overflow: hidden;
+}
+
+.flask-liquid {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 20%; /* Will be dynamically updated by JS */
+    background: rgba(37, 99, 235, 0.2); /* Light blue liquid */
+    transition: height 0.2s ease-out;
+}
+
+.zoom-box-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.zoom-box-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+#zoomCanvas {
+    background: #ffffff;
+    border: 3px solid #374151;
+    border-radius: 12px;
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+}
+
+/* Controls */
+.controls {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+}
+
+.slider-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 400px;
+    background: #ffffff;
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-dim);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.slider-container label {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
+/* Data Acquisition Panel */
+.readout-panel {
+    width: 380px !important;
+    margin: 15px 40px 30px auto !important;
+    height: max-content !important;
+    align-self: flex-start !important;
+    background: repeating-linear-gradient(transparent, transparent 40px, rgba(0, 0, 0, 0.08) 40px, rgba(0, 0, 0, 0.08) 41px), #fef4a9;
+    border-right: 1px solid var(--border-dim); /* RTL so border right */
+    padding: 40px 30px 50px 30px !important;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    transform: none !important;
+    border-radius: 10px 10px 30px 10px;
+    box-shadow: 2px 4px 6px rgba(0,0,0,0.1), 5px 10px 20px rgba(0,0,0,0.15);
+    position: relative;
+}
+
+.readout-panel::before {
+    content: '';
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 35px;
+    background: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    z-index: 10;
+    backdrop-filter: blur(2px);
+}
+
+.panel-title {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    color: var(--text-main);
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 2rem;
+}
+
+.readout-box {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid var(--border-dim);
+    border-radius: 8px;
+    height: 70px !important;
+    padding: 15px 20px !important;
+    margin-bottom: 25px !important;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.readout-label {
+    font-family: var(--font-sans);
+    font-size: 14px !important;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.readout-value {
+    font-family: var(--font-mono);
+    font-size: 28px !important;
+    font-weight: bold;
+    color: #1f2937;
+}
+
+.readout-value.highlight {
+    color: var(--accent);
+}
+
+/* Ka Vibration Animation */
+.shake-anim {
+    animation: bounceShake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes bounceShake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-5px) scale(1.02); }
+    40% { transform: translateX(5px) scale(1.02); }
+    60% { transform: translateX(-3px) scale(1.01); }
+    80% { transform: translateX(3px) scale(1.01); }
+}

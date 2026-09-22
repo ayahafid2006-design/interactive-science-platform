@@ -1,0 +1,460 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #050505;
+    font-family: 'Tajawal', sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.thematic-bg {
+    position: absolute;
+    top: 0;
+    width: 50vw;
+    height: 100vh;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.bg-chemistry {
+    right: 0;
+}
+
+.bg-physics {
+    left: 0;
+}
+
+.floating-symbol {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-shadow: 0 0 15px currentColor;
+    will-change: transform, opacity;
+}
+
+/* Wrapper to align header and portals */
+.main-wrapper {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 50px;
+}
+
+/* Header */
+.brand-header {
+    text-align: center;
+    color: white;
+}
+
+.brand-header h1 {
+    font-size: 3.5rem;
+    margin: 0;
+    font-weight: 700;
+    color: #ffffff;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3), 0 0 40px rgba(255, 255, 255, 0.1);
+    transition: opacity 0.3s ease;
+}
+
+.brand-header p {
+    font-size: 1.2rem;
+    margin: 10px 0 0 0;
+    opacity: 0.7;
+    font-weight: 400;
+    transition: opacity 0.3s ease;
+}
+
+/* Language Toggle */
+.lang-toggle {
+    position: fixed;
+    top: 30px;
+    left: 40px;
+    z-index: 50;
+    padding: 10px 24px;
+    border-radius: 50px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.lang-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.15), 0 10px 20px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+}
+
+.portal-container {
+    display: flex;
+    gap: 120px;
+    align-items: center;
+}
+
+/* Glassmorphism Portals */
+.portal {
+    position: relative;
+    width: 320px;
+    height: 520px;
+    border-radius: 40px;
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.02);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.portal-container:hover .portal:not(:hover) {
+    opacity: 0.3;
+}
+
+.portal:hover {
+    transform: translateY(-15px) scale(1.02);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.8), inset 0 0 30px rgba(255, 255, 255, 0.05);
+}
+
+/* 5. Advanced Mouse-Tracking Glow (Flashlight Effect) */
+.portal::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255,255,255,0.15), transparent 40%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1; /* Above background/border, below content */
+    pointer-events: none;
+}
+
+.portal:hover::after {
+    opacity: 1;
+}
+
+/* Inner Glow Orbs */
+.glow-orb {
+    position: absolute;
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    opacity: 0.6;
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    z-index: 0;
+    filter: blur(50px);
+    animation: pulse 4s infinite alternate ease-in-out;
+}
+
+.portal.chemistry .glow-orb {
+    background: radial-gradient(circle, #3b82f6 0%, #a855f7 100%);
+}
+
+.portal.physics .glow-orb {
+    background: radial-gradient(circle, #f97316 0%, #06b6d4 100%);
+}
+
+.portal:hover .glow-orb {
+    opacity: 0.9;
+    transform: scale(1.1);
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 0.5; }
+    100% { transform: scale(1.15); opacity: 0.8; }
+}
+
+/* Portal Content Container */
+.portal-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 2; /* Above the glow-orb and flashlight */
+    pointer-events: none; /* Let mouse interact with the portal itself */
+}
+
+/* Portal Icons */
+.portal-icon {
+    font-size: 4rem;
+    margin-bottom: 25px;
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.chemistry .portal-icon {
+    color: #a855f7;
+    text-shadow: 0 0 25px rgba(168, 85, 247, 0.6);
+}
+
+.physics .portal-icon {
+    color: #06b6d4;
+    text-shadow: 0 0 25px rgba(6, 182, 212, 0.6);
+}
+
+.portal:hover .portal-icon {
+    transform: scale(1.1) translateY(-5px);
+    text-shadow: 0 0 40px currentColor; /* Enhances glow on hover */
+}
+
+/* Typography with Neon Glow */
+.portal h2 {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin: 0;
+    color: #ffffff;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.4), 0 0 30px rgba(255, 255, 255, 0.2);
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.portal:hover h2 {
+    text-shadow: 0 0 25px rgba(255, 255, 255, 0.8), 0 0 45px rgba(255, 255, 255, 0.5);
+    transform: scale(1.05);
+}
+
+/* English Subtitle */
+.en-subtitle {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 6px;
+    color: #ffffff;
+    opacity: 0.6;
+    margin-top: 15px;
+    font-family: sans-serif;
+    font-weight: 600;
+    transition: all 0.4s ease;
+}
+
+.portal:hover .en-subtitle {
+    opacity: 0.9;
+}
+
+/* =========================================
+   Dive-in Transition (Interaction Physics)
+   ========================================= */
+
+.portal.dive-in {
+    transform: scale(50) !important;
+    opacity: 1 !important;
+    border-radius: 40px; 
+    transition: transform 1.2s cubic-bezier(0.7, 0, 0.1, 1), opacity 0.4s !important;
+    z-index: 100;
+}
+
+.portal.dive-in .portal-content {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* Fade out all other UI elements during dive */
+body.diving .thematic-bg,
+body.diving .brand-header,
+body.diving .lang-toggle,
+body.diving .portal-container .portal:not(.dive-in) {
+    opacity: 0 !important;
+    transition: opacity 0.4s ease;
+}
+
+body.diving {
+    pointer-events: none;
+}
+
+/* i18n text transition class */
+.text-fade-out {
+    opacity: 0 !important;
+}
+
+/* =========================================
+   Dashboard Styles
+   ========================================= */
+
+.dashboard-body {
+    align-items: flex-start;
+    padding-top: 5vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.dashboard-bg {
+    width: 100vw !important;
+}
+
+.dashboard-wrapper {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 1200px;
+    padding: 0 40px;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 50px;
+    color: white;
+}
+
+.dashboard-header h1 {
+    font-size: 2.5rem;
+    margin: 0;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+}
+
+.back-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 24px;
+    border-radius: 50px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    text-decoration: none;
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    width: 110px;
+    justify-content: center;
+}
+
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateX(5px); /* Move right since RTL */
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
+}
+
+.experiment-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    width: 100%;
+    padding-bottom: 50px;
+}
+
+.experiment-grid.single-item {
+    display: flex;
+    justify-content: center;
+    padding-top: 10vh;
+}
+
+.experiment-card {
+    position: relative;
+    border-radius: 25px;
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    text-decoration: none;
+    color: white;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    min-height: 200px;
+}
+
+.experiment-card:hover {
+    transform: translateY(-10px);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+}
+
+.experiment-card i {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    color: #a855f7;
+    text-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    z-index: 2;
+}
+
+.experiment-card h3 {
+    font-size: 1.2rem;
+    margin: 0;
+    text-align: center;
+    z-index: 2;
+}
+
+.experiment-card:hover i {
+    transform: scale(1.1) translateY(-5px);
+    text-shadow: 0 0 25px currentColor;
+}
+
+/* Flashlight effect for cards */
+.experiment-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255,255,255,0.1), transparent 40%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.experiment-card:hover::after {
+    opacity: 1;
+}
+
+/* Inner static glow */
+.card-glow {
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, rgba(168, 85, 247, 0.1) 100%);
+    filter: blur(30px);
+    z-index: 0;
+    opacity: 0.5;
+    transition: all 0.4s ease;
+}
+
+.experiment-card:hover .card-glow {
+    opacity: 0.8;
+    transform: scale(1.2);
+}
+
+/* Coming soon styling */
+.coming-soon {
+    max-width: 600px;
+    width: 100%;
+    min-height: 300px;
+}
+
+.coming-soon i {
+    color: #06b6d4;
+    text-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
+    font-size: 4rem;
+}
+
+.physics-glow {
+    background: radial-gradient(circle, rgba(249, 115, 22, 0.3) 0%, rgba(6, 182, 212, 0.1) 100%);
+}

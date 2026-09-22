@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>مختبر الفيزياء الافتراضي المنهجي | تجربة فراداي - الحث الكهرومغناطيسي</title>
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="../fonts/google-fonts.css">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="../libs/fontawesome.min.css">
+    <!-- GSAP & Draggable -->
+    <script src="../libs/gsap.min.js"></script>
+    <script src="../libs/Draggable.min.js"></script>
+    <script src="../engine/svg-wire-engine.js"></script>
+    <link rel="stylesheet" href="../libs/tailwind.css">
+    <link rel="stylesheet" href="../css/raqeem-experiment.css">
+    <link rel="stylesheet" href="../css/raqeem-drawer.css">
+    <!-- Elite Components Factory -->
+    <link rel="stylesheet" href="../engine/elite-styles.css">
+    <script src="../engine/elite-components.v2.js"></script>
+    <script src="../engine/elite-engine.js?v=2"></script>
+
+    <style>
+        /* Workspace */
+        .workspace-area {
+            width: 100% !important; height: 100% !important; min-height: 0 !important;
+            background-color: #f8f9fb !important;
+            background-image:
+                linear-gradient(rgba(117,82,255,0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(117,82,255,0.08) 1px, transparent 1px) !important;
+            background-size: 30px 30px !important;
+            border-radius: 12px; position: relative; overflow: hidden;
+            border: 1px solid rgba(117,82,255,0.25);
+            box-shadow: inset 0 2px 20px rgba(117,82,255,0.05), 0 4px 24px rgba(0,0,0,0.3);
+        }
+        .component { position: absolute; z-index: 10; user-select: none; cursor: grab; }
+        .component:active { cursor: grabbing; }
+        .drop-zone { position: absolute; border: 2px dashed rgba(117, 82, 255, 0.4) !important; border-radius: 8px; background: rgba(117, 82, 255, 0.05) !important; z-index: 1; transition: all 0.3s; }
+        .drop-zone.highlight { border-color: rgba(117, 82, 255, 0.9) !important; background: rgba(117, 82, 255, 0.2) !important; box-shadow: 0 0 15px rgba(117, 82, 255, 0.5) !important; animation: pulse-drop 1.5s infinite !important; }
+        @keyframes pulse-drop { 0% { box-shadow: 0 0 5px rgba(117, 82, 255, 0.3); } 50% { box-shadow: 0 0 20px rgba(117, 82, 255, 0.8); } 100% { box-shadow: 0 0 5px rgba(117, 82, 255, 0.3); } }
+        .drop-zone.active { opacity: 0; pointer-events: none; }
+        svg.wires-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 25; }
+        .terminal-node { position: absolute; width: 16px; height: 16px; border-radius: 50%; background: rgba(117, 82, 255, 0.3); border: 2px solid #7552FF; transform: translate(-50%, -50%); cursor: crosshair; z-index: 30; display: none; transition: transform 0.2s, background 0.2s; box-shadow: 0 0 6px rgba(117,82,255,0.5); }
+        #workspace .component.placed .terminal-node, #workspace .elite-component.placed .terminal-node { display: block; }
+        .terminal-node:hover, .terminal-node.hovered { background: rgba(117, 82, 255, 1); transform: translate(-50%, -50%) scale(1.3); box-shadow: 0 0 10px #7552FF; }
+        .terminal-node.connected { background: #2ecc71; border-color: #fff; box-shadow: 0 0 8px #2ecc71; cursor: default; }
+        .user-wire { transition: filter 0.3s, stroke 0.3s; }
+        @keyframes pulseGlow { 0% { box-shadow: 0 0 5px #facc15, inset 0 0 5px #facc15; background: rgba(250, 204, 21, 0.4); border-color: #facc15; transform: translate(-50%, -50%) scale(1.2); } 50% { box-shadow: 0 0 20px #facc15, inset 0 0 10px #facc15; background: rgba(250, 204, 21, 0.8); border-color: #fff; transform: translate(-50%, -50%) scale(1.5); } 100% { box-shadow: 0 0 5px #facc15, inset 0 0 5px #facc15; background: rgba(250, 204, 21, 0.4); border-color: #facc15; transform: translate(-50%, -50%) scale(1.2); } }
+        .terminal-node.target-glow { animation: pulseGlow 1.2s infinite; z-index: 35; }
+
+        .flux-line {
+            fill: none;
+            stroke: #00d2ff;
+            stroke-width: 2.5;
+            stroke-dasharray: 15 10;
+            opacity: 0;
+            pointer-events: none;
+        }
+        @keyframes flowClockwise {
+            from { stroke-dashoffset: 50; }
+            to { stroke-dashoffset: 0; }
+        }
+        @keyframes flowCounterClockwise {
+            from { stroke-dashoffset: 0; }
+            to { stroke-dashoffset: 50; }
+        }
+        .flux-cw circle, .flux-cw path, circle.flux-cw, path.flux-cw { animation: flowClockwise 0.5s linear infinite; }
+        .flux-ccw circle, .flux-ccw path, circle.flux-ccw, path.flux-ccw { animation: flowCounterClockwise 0.5s linear infinite; }
+        .exp-sidebar-v2::-webkit-scrollbar { width: 5px; }
+        .exp-sidebar-v2::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); border-radius: 4px; }
+        .exp-sidebar-v2::-webkit-scrollbar-thumb { background: rgba(117, 82, 255, 0.4); border-radius: 4px; }
+        .exp-sidebar-v2::-webkit-scrollbar-thumb:hover { background: rgba(117, 82, 255, 0.8); }
+    </style>
+</head>
+<body class="exp-layout-sidebar-v2">
+
+    <!-- ═══ SIDEBAR ═══ -->
+    <aside class="exp-sidebar-v2" style="position: relative; z-index: 9999; overflow-y: auto; overflow-x: hidden;">
+        <!-- Logo -->
+        <div class="exp-sidebar-v2-header">
+            <div style="display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="window.location.reload();">
+                <svg viewBox="0 0 100 100" style="width:32px; height:32px; flex-shrink:0;">
+                    <polygon points="50,5 90,25 90,65 50,95 10,65 10,25" fill="none" stroke="#7552FF" stroke-width="5" stroke-linejoin="round" />
+                    <polygon points="50,15 80,30 80,60 50,82 20,60 20,30" fill="rgba(9,6,23,0.95)" stroke="#ffb347" stroke-width="3" stroke-linejoin="round" />
+                    <path d="M40,36 H60 M40,49 H55 M40,62 H60 M40,36 V62" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <div>
+                    <div style="font-size:0.7rem; font-weight:900; color:#fff; font-family:'Outfit',sans-serif; letter-spacing:0.1em;">ELITE</div>
+                    <div style="font-size:0.55rem; color:rgba(117,82,255,0.8); letter-spacing:0.05em;">الفريق البرمجي</div>
+                </div>
+            </div>
+            <div class="exp-sidebar-v2-title">تجربة فراداي - الحث الكهرومغناطيسي</div>
+        </div>
+
+        <!-- Step Banner -->
+        <div class="exp-sidebar-v2-banner" id="stepBanner">
+            الخطوة 1: اسحب المكونات الأربعة ووضعها في أماكنها المخصصة لتجميع الدائرة.
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="exp-sidebar-actions">
+            <button class="btn-auto-wire" id="auto-wire-btn" style="justify-content:center;" disabled>
+                <i class="fa-solid fa-bolt"></i> <span>توصيل</span>
+            </button>
+            <button class="btn-reset" id="reset-btn" style="justify-content:center;">
+                <i class="fa-solid fa-rotate-right"></i> <span>إعادة</span>
+            </button>
+        </div>
+
+        <div class="exp-sidebar-v2-section-title" style="margin-top: 5px;">عناصر الدائرة</div>
+        <div id="inventory" style="display: flex; flex-direction: column; align-items: stretch; gap: 10px; padding-bottom: 20px; padding-left: 2px; padding-right: 2px;">
+            <!-- Battery Card -->
+            <div style="background:rgba(0,0,0,0.2);border:1px solid rgba(117,82,255,0.15);border-radius:10px;padding:6px;text-align:center;">
+                <div style="font-size:0.65rem;font-weight:700;color:#a78bfa;margin-bottom:4px;">البطارية</div>
+                <div id="battery-card-body" style="min-height: 40px; display: flex; justify-content: center; align-items: center; overflow: visible;"></div>
+            </div>
+            <!-- Switch Card -->
+            <div style="background:rgba(0,0,0,0.2);border:1px solid rgba(117,82,255,0.15);border-radius:10px;padding:6px;text-align:center;">
+                <div style="font-size:0.65rem;font-weight:700;color:#a78bfa;margin-bottom:4px;">المفتاح الكهربائي</div>
+                <div id="switch-card-body" style="min-height: 50px; display: flex; justify-content: center; align-items: center; overflow: visible;"></div>
+            </div>
+            <!-- Ring Card -->
+            <div style="background:rgba(0,0,0,0.2);border:1px solid rgba(117,82,255,0.15);border-radius:10px;padding:6px;text-align:center;">
+                <div style="font-size:0.65rem;font-weight:700;color:#a78bfa;margin-bottom:4px;">حلقة فراداي</div>
+                <div id="ring-card-body" style="min-height: 60px; display: flex; justify-content: center; align-items: center; overflow: visible;"></div>
+            </div>
+            <!-- Galvanometer Card -->
+            <div style="background:rgba(0,0,0,0.2);border:1px solid rgba(117,82,255,0.15);border-radius:10px;padding:6px;text-align:center;">
+                <div style="font-size:0.65rem;font-weight:700;color:#a78bfa;margin-bottom:4px;">الجلفانوميتر</div>
+                <div id="galvanometer-card-body" style="min-height: 50px; display: flex; justify-content: center; align-items: center; overflow: visible;"></div>
+            </div>
+
+            <!-- Wires Card -->
+            <div style="background:rgba(0,0,0,0.2);border:1px solid rgba(117,82,255,0.15);border-radius:10px;padding:6px;text-align:center;">
+                <div style="font-size:0.65rem;font-weight:700;color:#a78bfa;margin-bottom:4px;">أسلاك توصيل</div>
+                <svg viewBox="0 0 80 30" style="width:100%;height:28px;">
+                    <path d="M5 15 Q 20 5 40 15 Q 60 25 75 15" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round"/>
+                    <circle cx="5" cy="15" r="3" fill="#7c3aed"/>
+                    <circle cx="75" cy="15" r="3" fill="#7c3aed"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Story Button -->
+        <button class="story-toggle" id="story-btn" style="margin-top:6px;">
+            <i class="fa-solid fa-book-open"></i> قصة التحدي التاريخي
+        </button>
+
+        <!-- Back to Menu -->
+        <a href="../index.html?showMenu=true" class="exp-back-btn-td" id="back-btn" style="justify-content:center; margin-top:4px;">
+            <i class="fa-solid fa-house" style="color:var(--cyan);"></i> <span>القائمة الرئيسية</span>
+        </a>
+    </aside>
+
+    <!-- ═══ MAIN CONTENT ═══ -->
+    <div class="exp-main-v2">
+        <!-- Topbar -->
+        <div class="exp-main-v2-topbar">
+            <h1 style="font-size:0.95rem; font-weight:900; color:#fff;">تجربة فراداي - الحث الكهرومغناطيسي</h1>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div id="status-text" style="font-size:0.8rem; font-weight:700; color:var(--gold); text-shadow:0 0 8px rgba(255,179,71,0.35); transition:color 0.3s;">
+                    يرجى سحب المكونات الأربعة إلى أماكنها المخصصة
+                </div>
+                <a href="../index.html?showMenu=true" style="text-decoration: none; display: flex; align-items: center; gap: 6px; background:rgba(0,0,0,0.45); border:1px solid rgba(255,255,255,0.05); border-radius:10px; padding:5px 14px; color:#cbd5e1; font-size:0.75rem; font-weight:700; transition:all 0.3s;">
+                    <i class="fa-solid fa-house" style="color:var(--cyan);"></i> الرئيسية
+                </a>
+            </div>
+        </div>
+
+        <!-- Workspace -->
+        <div class="exp-main-v2-workspace" style="display: flex; flex-direction: column; width: 100%; height: 100%;">
+            <div style="flex:1; position:relative; overflow:hidden; min-height:0; display: flex;">
+                <div class="workspace-area" id="workspace" style="flex: 1; width: 100% !important; height: 100% !important;">
+                    <svg class="wires-layer raqeem-svg-wires" id="wiresLayer">
+                        <defs>
+                            <filter id="glowOrange" filterUnits="userSpaceOnUse" x="-100" y="-100" width="1200" height="1200">
+                              <feGaussianBlur stdDeviation="3" result="blur" />
+                              <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                            </filter>
+                        </defs>
+                    </svg>
+                    <!-- Drop Zones -->
+                    <div class="drop-zone" id="zone-battery" style="width: 80px; height: 65px;"></div>
+                    <div class="drop-zone" id="zone-switch" style="width: 90px; height: 110px;"></div>
+                    <div class="drop-zone" id="zone-ring" style="width: 200px; height: 200px;"></div>
+                    <div class="drop-zone" id="zone-galvanometer" style="width: 120px; height: 100px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ STORY OVERLAY ═══ -->
+    <div class="story-overlay" id="story-overlay">
+        <div class="story-box">
+            <button class="story-close" id="story-close">✕ إغلاق</button>
+            <div class="story-title">قصة اكتشاف فراداي والحلقة المقفلة</div>
+            <div class="story-body">
+                <p><span class="tc">التحدي:</span> بعد اكتشاف أورستد أن التيار الكهربائي يولد مجالا مغناطيسيا، حاول العلماء لسنوات توليد الكهرباء من المغناطيس لكنهم فشلوا لأنهم استخدموا مجالات مغناطيسية ثابتة.</p>
+                <p><span class="to">التجربة:</span> لغرض حل هذا اللغز، صمم فراداي حلقة مقفلة من الحديد المطاوع ولف حولها ملفين سلكيين معزولين تماما عن بعضهما. ربط الملف الابتدائي ببطارية ومفتاح، وربط الملف الثانوي بجهاز جلفانوميتر.</p>
+                <p><span class="tr">المفاجأة:</span> لاحظ فراداي أن مؤشر الجلفانوميتر لا يتحرك أثناء انسياب تيار ثابت، ولكنه ينحرف فقط لحظة غلق المفتاح ولحظة فتحه.</p>
+                <p><span class="tg">الاستنتاج:</span> التيار المحتث يتولد فقط عند حدوث تغير في الفيض المغناطيسي الذي يخترق الملف لوحدة الزمن.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        gsap.registerPlugin(Draggable);
+
+
+
+        const state = {
+            components: {},
+            wired: false,
+            switchState: 0,
+            animating: false
+        };
+
+        const REQUIRED_PAIRS = [
+            'battery-pos-ring-p1',
+            'ring-p2-switch-k',
+            'switch-1-battery-neg',
+            'ring-s1-galvanometer-left',
+            'ring-s2-galvanometer-right'
+        ];
+
+        function setStatus(msg, colorClass) {
+            const statusText = document.getElementById('status-text');
+            if (statusText) {
+                statusText.textContent = msg;
+                // Map color names to CSS variables
+                const colorMap = {
+                    'cyan': 'var(--cyan)',
+                    'orange': 'var(--gold)',
+                    'red': 'var(--red)',
+                    'green': 'var(--green)',
+                    'gold': 'var(--gold)'
+                };
+                statusText.style.color = colorMap[colorClass] || 'var(--gold)';
+            }
+            // Also update step banner
+            const banner = document.getElementById('stepBanner');
+            if (banner) {
+                banner.textContent = msg;
+            }
+        }
+
+        // Story overlay toggle
+        const storyBtn = document.getElementById('story-btn');
+        const storyOverlay = document.getElementById('story-overlay');
+        const storyClose = document.getElementById('story-close');
+        if (storyBtn && storyOverlay) {
+            storyBtn.addEventListener('click', () => {
+                storyOverlay.classList.add('open');
+            });
+        }
+        if (storyClose && storyOverlay) {
+            storyClose.addEventListener('click', () => {
+                storyOverlay.classList.remove('open');
+            });
+            storyOverlay.addEventListener('click', (e) => {
+                if (e.target === storyOverlay) storyOverlay.classList.remove('open');
+            });
+        }
+
+        function layoutCircuit() {
+            const ws = document.getElementById('workspace');
+            if (!ws) return;
+            const w = ws.clientWidth || 900;
+            const h = ws.clientHeight || 500;
+            const cx = w / 2;
+            const cy = h / 2;
+
+            // Base required circuit envelope: 580px width x 270px height
+            const scaleX = Math.min(1.0, Math.max(0.40, (w - 60) / 580));
+            const scaleY = Math.min(1.0, Math.max(0.40, (h - 40) / 270));
+            const scale = Math.min(scaleX, scaleY);
+            window.circuitScale = scale;
+
+            const layoutMap = {
+                'zone-battery':     { ox: -270, oy: -100, baseW: 80,  baseH: 65,  compId: 'battery' },
+                'zone-switch':      { ox: -270, oy: 25,   baseW: 90,  baseH: 110, compId: 'switch' },
+                'zone-ring':        { ox: -100, oy: -100, baseW: 200, baseH: 200, compId: 'ring' },
+                'zone-galvanometer':{ ox: 155,  oy: -50,  baseW: 120, baseH: 100, compId: 'galvanometer' }
+            };
+
+            for (const [zoneId, data] of Object.entries(layoutMap)) {
+                const zone = document.getElementById(zoneId);
+                const zLeft = (cx + data.ox * scale) + 'px';
+                const zTop  = (cy + data.oy * scale) + 'px';
+
+                if (zone) {
+                    zone.style.width  = (data.baseW * scale) + 'px';
+                    zone.style.height = (data.baseH * scale) + 'px';
+                    zone.style.left   = zLeft;
+                    zone.style.top    = zTop;
+                }
+                const comp = document.getElementById(data.compId);
+                if (comp && comp.classList.contains('placed')) {
+                    comp.style.transformOrigin = 'top left';
+                    comp.style.transform = scale < 0.99 ? `scale(${scale})` : 'none';
+                    comp.style.left = zLeft;
+                    comp.style.top  = zTop;
+                }
+            }
+            if (window.engine && window.engine.wireEngine) {
+                window.engine.wireEngine.repositionWires();
+            }
+        }
+
+        window.addEventListener('resize', layoutCircuit);
+
+        function autoConnectCircuit() {
+            if (!window.engine || !window.engine.wireEngine) return;
+            const pairsToConnect = [
+                ['battery-pos', 'ring-p1'],
+                ['ring-p2', 'switch-k'],
+                ['switch-1', 'battery-neg'],
+                ['ring-s1', 'galvanometer-left'],
+                ['ring-s2', 'galvanometer-right']
+            ];
+
+            window.engine.wireEngine.autoWire(pairsToConnect);
+            const btn = document.getElementById('auto-wire-btn');
+            if (btn) {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+            }
+        }
+
+        document.getElementById('auto-wire-btn').addEventListener('click', autoConnectCircuit);
+        document.getElementById('reset-btn').addEventListener('click', () => { window.location.reload(); });
+
+        function handleSwitchClick(e) {
+            if (e) e.stopPropagation();
+            if (state.animating) return;
+            if (!window.isCircuitComplete) {
+                setStatus('يرجى إكمال توصيل الدائرة أولاً قبل تشغيل المفتاح!', 'orange');
+                return;
+            }
+            
+            const arm = document.getElementById('switch-arm');
+            const needle = document.getElementById('galvanometer-needle');
+            const fluxGroup = document.getElementById('flux-group') || document.getElementById('ring-flux-line');
+            
+            state.animating = true;
+            
+            if (state.switchState === 0) {
+                state.switchState = 1;
+                gsap.to(arm, {rotation: 0, duration: 0.2});
+                if (fluxGroup) {
+                    fluxGroup.setAttribute('class', 'flux-cw');
+                    gsap.to(fluxGroup, {opacity: 1, duration: 0.1});
+                }
+                
+                gsap.to(needle, {
+                    rotation: 30, duration: 0.2, ease: "power2.out",
+                    onComplete: () => {
+                        gsap.to(needle, {
+                            rotation: 0, duration: 0.8, ease: "power2.inOut",
+                            onComplete: () => {
+                                if (fluxGroup) gsap.to(fluxGroup, {opacity: 0, duration: 0.2});
+                                state.animating = false;
+                                setStatus('استقر الفيض المغناطيسي (لا يوجد تغير)، فعاد المؤشر للصفر.', 'orange');
+                            }
+                        });
+                    }
+                });
+                setStatus('لحظة الغلق: ينمو الفيض المغناطيسي، يتولد تيار محتث مؤقت!', 'cyan');
+            } else {
+                state.switchState = 0;
+                gsap.to(arm, {rotation: -30, duration: 0.2});
+                if (fluxGroup) {
+                    fluxGroup.setAttribute('class', 'flux-ccw');
+                    gsap.to(fluxGroup, {opacity: 1, duration: 0.1});
+                }
+                
+                gsap.to(needle, {
+                    rotation: -30, duration: 0.2, ease: "power2.out",
+                    onComplete: () => {
+                        gsap.to(needle, {
+                            rotation: 0, duration: 0.8, ease: "power2.inOut",
+                            onComplete: () => {
+                                if (fluxGroup) gsap.to(fluxGroup, {opacity: 0, duration: 0.2});
+                                state.animating = false;
+                                setStatus('تلاشى الفيض المغناطيسي تماماً، وعاد المؤشر للصفر.', 'orange');
+                            }
+                        });
+                    }
+                });
+                setStatus('لحظة الفتح: يتلاشى الفيض المغناطيسي، يتولد تيار محتث مؤقت معاكس!', 'red');
+            }
+        }
+
+        // Track mouse/touch position globally for cursor-based drag anchoring
+        window._lastMouseX = null;
+        window._lastMouseY = null;
+        document.addEventListener('mousemove', e => { window._lastMouseX = e.clientX; window._lastMouseY = e.clientY; }, { passive: true });
+        document.addEventListener('touchmove', e => { if (e.touches && e.touches[0]) { window._lastMouseX = e.touches[0].clientX; window._lastMouseY = e.touches[0].clientY; } }, { passive: true });
+        document.addEventListener('touchstart', e => { if (e.touches && e.touches[0]) { window._lastMouseX = e.touches[0].clientX; window._lastMouseY = e.touches[0].clientY; } }, { passive: true });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            layoutCircuit();
+
+            // Create component HTML in sidebar cards with relative positioning
+            let batHTML = EliteComponents.getBattery('battery', 0, 0, 'zone-battery');
+            batHTML = batHTML.replace('style="', 'style="position: relative !important; left: 0 !important; top: 0 !important; transform: scale(0.65); transform-origin: center center; margin: -10px auto; ');
+            document.getElementById('battery-card-body').innerHTML = batHTML;
+
+            let swHTML = EliteComponents.getSwitch('switch', 0, 0, 'zone-switch', true);
+            swHTML = swHTML.replace('style="', 'style="position: relative !important; left: 0 !important; top: 0 !important; transform: scale(0.65); transform-origin: center center; margin: -10px auto; ');
+            document.getElementById('switch-card-body').innerHTML = swHTML;
+
+            let ringHTML = EliteComponents.getFaradayRing('ring', 0, 0, 'zone-ring');
+            ringHTML = ringHTML.replace('style="', 'style="position: relative !important; left: 0 !important; top: 0 !important; transform: scale(0.42); transform-origin: center center; margin: -55px auto; ');
+            document.getElementById('ring-card-body').innerHTML = ringHTML;
+
+            let galvHTML = EliteComponents.getGalvanometer('galvanometer', 0, 0, 'zone-galvanometer');
+            galvHTML = galvHTML.replace('style="', 'style="position: relative !important; left: 0 !important; top: 0 !important; transform: scale(0.6); transform-origin: center center; margin: -10px auto; ');
+            document.getElementById('galvanometer-card-body').innerHTML = galvHTML;
+
+            const engine = new EliteEngine({
+                workspaceId: 'workspace',
+                disableScaler: true,
+                freeDrop: true,
+                onComponentDragStart: (comp, draggable) => {
+                    const ws = document.getElementById('workspace');
+                    if (comp.parentElement !== ws) {
+                        const wsRect = ws.getBoundingClientRect();
+                        const curScale = window.circuitScale || 1.0;
+
+                        const mouseX = (window._lastMouseX != null ? window._lastMouseX : wsRect.left + wsRect.width / 2) - wsRect.left;
+                        const mouseY = (window._lastMouseY != null ? window._lastMouseY : wsRect.top  + wsRect.height / 2) - wsRect.top;
+
+                        ws.appendChild(comp);
+                        comp.style.setProperty('position', 'absolute', 'important');
+                        comp.style.margin = '0';
+                        comp.style.transformOrigin = 'top left';
+                        comp.style.transform = curScale < 0.99 ? `scale(${curScale})` : 'none';
+                        gsap.set(comp, { clearProps: 'margin' });
+
+                        const halfW = (comp.offsetWidth * curScale) / 2;
+                        const halfH = (comp.offsetHeight * curScale) / 2;
+                        const newLeft = mouseX - halfW;
+                        const newTop  = mouseY - halfH;
+
+                        gsap.set(comp, { left: newLeft, top: newTop, x: 0, y: 0 });
+
+                        if (draggable) {
+                            draggable.startLeft = newLeft;
+                            draggable.startTop  = newTop;
+                            draggable.update();
+                        }
+                    }
+                },
+                wireColor: '#1e293b',
+                expectedPairs: REQUIRED_PAIRS,
+                onCircuitComplete: (connections) => {
+                    if (connections.size >= 5) {
+                        window.isCircuitComplete = true;
+                        setStatus('تم التوصيل بنجاح! اضغط على المفتاح لغلقه ولاحظ مؤشر الجلفانوميتر!', 'green');
+                        const swEl = document.getElementById('switch');
+                        const switchArm = document.getElementById('switch-arm');
+                        [swEl, switchArm].forEach(el => {
+                            if (el) {
+                                el.style.cursor = 'pointer';
+                                el.style.pointerEvents = 'auto';
+                                el.removeEventListener('click', handleSwitchClick);
+                                el.addEventListener('click', handleSwitchClick);
+                            }
+                        });
+                    } else {
+                        window.isCircuitComplete = false;
+                    }
+                },
+                onComponentPlaced: (placed, total) => {
+                    if (placed >= 4) {
+                        setStatus('ممتاز! انقر على زر "توصيل تلقائي" أو ارسم الأسلاك يدوياً', 'cyan');
+                        const btn = document.getElementById('auto-wire-btn');
+                        if (btn) {
+                            btn.disabled = false;
+                            btn.style.opacity = '1';
+                            btn.style.cursor = 'pointer';
+                        }
+                    }
+                }
+            });
+
+            // Revert scaler wrapper styles that shrink the workspace
+            const wsEl = document.getElementById('workspace');
+            const wrapper = wsEl.closest('.workspace-scaler-wrapper');
+            if (wrapper) {
+                wrapper.style.display = 'block';
+                wrapper.style.height = '100%';
+            }
+            wsEl.style.position = 'relative';
+            wsEl.style.transform = 'none';
+            wsEl.style.left = '0';
+
+            window.engine = engine;
+            engine.totalComponents = 4;
+            engine.setupTerminals();
+
+            engine.snapComponent = function(comp, dropZone) {
+                if (!comp || !dropZone || comp.classList.contains('placed')) return;
+                const ws = document.getElementById('workspace');
+                if (comp.parentElement !== ws) ws.appendChild(comp);
+
+                const curScale = window.circuitScale || 1.0;
+                gsap.killTweensOf(comp);
+                comp.style.position = 'absolute';
+                comp.style.margin = '0';
+                comp.style.transformOrigin = 'top left';
+                comp.style.transform = curScale < 0.99 ? `scale(${curScale})` : 'none';
+
+                gsap.to(comp, {
+                    left: dropZone.offsetLeft,
+                    top:  dropZone.offsetTop,
+                    x: 0, y: 0,
+                    duration: 0.35,
+                    ease: 'back.out(1.4)',
+                    onUpdate: () => { if (engine.wireEngine) engine.wireEngine.repositionWires(); }
+                });
+
+                dropZone.classList.add('active');
+                dropZone.classList.remove('highlight');
+                gsap.fromTo(dropZone, { scale: 1.1 }, { scale: 1, duration: 0.3 });
+
+                const draggableInst = Draggable.get(comp);
+                if (draggableInst) draggableInst.disable();
+                gsap.set(comp, { zIndex: 10 });
+                comp.classList.add('placed');
+
+                engine.placedCount++;
+                engine.onComponentPlaced(engine.placedCount, engine.totalComponents);
+
+                if (engine.wireEngine && typeof engine.wireEngine.setupTerminals === 'function') {
+                    engine.wireEngine.setupTerminals();
+                }
+            };
+
+            window.engine = engine;
+        });
+    </script>
+    <script src="../js/raqeem-navigation.js"></script>
+</body>
+</html>

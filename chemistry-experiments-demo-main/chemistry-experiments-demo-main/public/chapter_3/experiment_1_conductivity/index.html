@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conductivity Simulator</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- 70% Left/Center Area -->
+        <div class="lab-bench">
+            <h1 class="experiment-title">التوصيل الكهربائي للمحاليل (الإلكتروليتية وغير الإلكتروليتية)</h1>
+            <div class="header-area">
+                <a href="/chapter_3/index.html" class="back-btn" title="العودة إلى المنصة الرئيسية">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    <span>العودة الى الفصل</span>
+                </a>
+                <div class="equation-container" id="equation-container">
+                    <span class="equation-text" style="color: #555;">اختر مادة كيميائية من الحامل</span>
+                </div>
+                <div style="width: 120px;"></div>
+            </div>
+
+            <div class="glassware-area">
+                <div class="circuit-wrapper">
+                    <div class="battery">9V DC</div>
+                    <div class="polarity-label pos">+</div>
+                    <div class="polarity-label neg">-</div>
+                    <div class="lightbulb">
+                        <div class="filament"></div>
+                        <div class="glow" id="bulb-glow"></div>
+                    </div>
+                </div>
+                
+                <div class="beaker">
+                    <div class="electrodes">
+                        <div class="electrode anode" title="Anode (+)"></div>
+                        <div class="electrode cathode" title="Cathode (-)"></div>
+                    </div>
+                    <!-- Liquid level line -->
+                    <div class="liquid-surface"></div>
+                    <canvas id="beakerCanvas" width="294" height="178"></canvas>
+                </div>
+            </div>
+
+            <div class="bottles-rack">
+                <div class="bottle" data-chem="NaCl" data-type="strong">NaCl</div>
+                <div class="bottle" data-chem="HCl" data-type="strong">HCl</div>
+                <div class="bottle" data-chem="CH3COOH" data-type="weak" data-ka="1.8e-5">CH₃COOH</div>
+                <div class="bottle" data-chem="NH4OH" data-type="weak" data-ka="1.8e-5">NH₄OH</div>
+                <div class="bottle" data-chem="Sugar" data-type="none">Sugar</div>
+                <div class="bottle" data-chem="C2H5OH" data-type="none">C₂H₅OH</div>
+            </div>
+
+            <div class="controls">
+                <div class="slider-container">
+                    <label for="concentration">Concentration (M)</label>
+                    <input type="range" id="concentration" min="0.001" max="1.0" step="0.001" value="0.100">
+                </div>
+            </div>
+        </div>
+
+        <!-- 30% Right Area -->
+        <div class="readout-panel" dir="rtl">
+            <h2 class="panel-title">قراءات التجربة</h2>
+            
+            <div class="readout-box">
+                <div class="readout-label">التيار (mA)</div>
+                <div class="readout-value highlight" id="current-readout">0.00</div>
+            </div>
+            
+            <div class="readout-box">
+                <div class="readout-label">التركيز (M)</div>
+                <div class="readout-value" id="conc-readout">0.100</div>
+            </div>
+            
+            <div class="readout-box">
+                <div class="readout-label">نسبة التفكك (%)</div>
+                <div class="readout-value" id="dissoc-readout">0.00</div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

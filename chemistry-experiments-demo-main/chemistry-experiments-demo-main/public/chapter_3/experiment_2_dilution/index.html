@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تأثير التخفيف على درجة التأين</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- 70% Left/Center Area: Simulation -->
+        <div class="lab-bench">
+            <h1 class="experiment-title">التجربة الثانية: تأثير التخفيف على درجة التأين</h1>
+            
+            <div class="header-area">
+                <a href="../index.html" class="back-btn" title="العودة إلى الفصل">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                    <span>العودة الى الفصل</span>
+                </a>
+                <div class="equation-container">
+                    <span class="equation-text">CH₃COOH (aq) ⇌ H⁺ (aq) + CH₃COO⁻ (aq)</span>
+                </div>
+                <div style="width: 130px;"></div> <!-- Spacer for flexbox balance -->
+            </div>
+
+            <div class="glassware-area">
+                <div class="flask-container">
+                    <!-- Water Bottle (CSS/SVG Art) -->
+                    <div class="water-bottle">
+                        <div class="bottle-cap"></div>
+                        <div class="bottle-neck"></div>
+                        <div class="bottle-body">H₂O</div>
+                        <div class="water-drop" id="waterDrop"></div>
+                    </div>
+
+                    <!-- Erlenmeyer Flask -->
+                    <div class="flask">
+                        <div class="flask-neck"></div>
+                        <div class="flask-body">
+                            <div class="flask-liquid" id="flaskLiquid"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Zoom Box Canvas -->
+                <div class="zoom-box-wrapper">
+                    <div class="zoom-box-label">مشهد مجهري (50 جزيئة)</div>
+                    <canvas id="zoomCanvas" width="300" height="300"></canvas>
+                </div>
+            </div>
+
+            <div class="controls">
+                <div class="slider-container">
+                    <label id="sliderLabelWrapper" for="volumeSlider">حجم الماء المضاف: 10 مل</label>
+                    <!-- 0 to 2 slider mapped to 10^x * 10: 0->10, 1->100, 2->1000 -->
+                    <input type="range" id="volumeSlider" min="0" max="2" step="0.01" value="0">
+                </div>
+            </div>
+        </div>
+
+        <!-- 30% Right Area: Data Acquisition -->
+        <div class="readout-panel">
+            <h2 class="panel-title">قراءات التجربة</h2>
+            
+            <div class="readout-box">
+                <div class="readout-label">الحجم (mL)</div>
+                <div class="readout-value" id="vol-readout">10.0</div>
+            </div>
+            
+            <div class="readout-box">
+                <div class="readout-label">التركيز (M)</div>
+                <div class="readout-value" id="conc-readout">1.000</div>
+            </div>
+            
+            <div class="readout-box">
+                <div class="readout-label">نسبة التفكك (%)</div>
+                <div class="readout-value highlight" id="alpha-readout">0.42</div>
+            </div>
+
+            <div class="readout-box">
+                <div class="readout-label">الرقم الهيدروجيني (pH)</div>
+                <div class="readout-value" id="ph-readout">2.38</div>
+            </div>
+            
+            <div class="readout-box" id="ka-box">
+                <div class="readout-label">ثابت التأين (Ka)</div>
+                <div class="readout-value"><span dir="ltr" style="display: inline-block;">1.8 × 10⁻⁵</span></div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
