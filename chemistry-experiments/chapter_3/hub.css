@@ -1,4 +1,4 @@
-:root {
+﻿:root {
     --bg-dark: #020617; /* slate-950 */
     --panel-bg: #0f172a; /* slate-900 */
     --panel-border: rgba(255, 255, 255, 0.05);
@@ -218,6 +218,13 @@ body, html {
 }
 
 @media (max-width: 768px) {
+    .cards-grid {
+        grid-template-columns: 1fr;
+        padding: 0;
+    }
+    .hub-container {
+        padding: 1.5rem;
+    }
     .hub-title {
         font-size: 2rem;
     }
@@ -227,3 +234,4 @@ body, html {
         margin-bottom: 2rem;
     }
 }
+
