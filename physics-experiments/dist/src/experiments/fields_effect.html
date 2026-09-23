@@ -1,0 +1,1493 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>مختبر الفيزياء | حركة الجسيمات المشحونة - قوة لورنتز</title>
+    <link rel="stylesheet" href="../fonts/google-fonts.css">
+    <link rel="stylesheet" href="../libs/fontawesome.min.css">
+    <link rel="stylesheet" href="../libs/tailwind.css">
+    <link rel="stylesheet" href="../css/raqeem-drawer.css">
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #090617;
+            --panel: #251758;
+            --border: rgba(117, 82, 255, 0.25);
+            --cyan: #7552FF;
+            --orange: #ff7e67;
+            --red: #ef4444;
+            --blue: #5A46DA;
+            --green: #2ecc71;
+            --gold: #facc15;
+            --purple: #a855f7;
+            --text: #e2e8f0;
+        }
+
+        html, body { user-select: none; -webkit-user-select: none;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Tajawal', sans-serif;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── MAIN LAYOUT ── */
+        .app {
+            display: flex;
+            width: 100%;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ── MAIN CANVAS AREA ── */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-width: 0;
+        }
+
+        /* Top Bar */
+        .topbar {
+            flex-shrink: 0;
+            background: var(--panel);
+            border-bottom: 1px solid var(--border);
+            padding: 0 20px 0 80px;
+            height: 54px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .page-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--cyan);
+            text-shadow: 0 0 12px rgba(0, 210, 255, 0.5);
+            white-space: nowrap;
+        }
+
+        .logo-badge {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 5px 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .logo-badge .lg {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .logo-badge .sm {
+            font-size: 0.55rem;
+            color: var(--cyan);
+        }
+
+        /* Mode badge */
+        .mode-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            transition: all 0.3s;
+        }
+
+        .mode-badge.idle    { background: rgba(255,255,255,0.04); color: #64748b; border: 1px solid rgba(255,255,255,0.06); }
+        .mode-badge.electric{ background: rgba(255,159,67,0.15); color: var(--orange); border: 1px solid rgba(255,159,67,0.3); }
+        .mode-badge.magnetic{ background: rgba(59,130,246,0.15); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3); }
+        .mode-badge.lorentz { background: rgba(168,85,247,0.15); color: #d8b4fe; border: 1px solid rgba(168,85,247,0.3); }
+
+        /* Canvas Wrap */
+        .canvas-wrap {
+            flex: 1;
+            padding: 16px;
+            overflow: hidden;
+            display: flex;
+            align-items: stretch;
+        }
+
+        #vacuum-chamber {
+            width: 100%;
+            height: 100%;
+            background-color: #f8f9fb !important;
+            background-image:
+                linear-gradient(rgba(117,82,255,0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(117,82,255,0.08) 1px, transparent 1px) !important;
+            background-size: 30px 30px !important;
+            border-radius: 14px;
+            border: 1px solid rgba(117, 82, 255, 0.25);
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 2px 20px rgba(117, 82, 255, 0.05), 0 4px 24px rgba(0,0,0,0.3);
+        }
+
+        @keyframes pulse-filament {
+            0%, 100% { opacity: 0.65; box-shadow: 0 0 8px #ff7675; }
+            50% { opacity: 0.95; box-shadow: 0 0 16px #ff7675; }
+        }
+
+        .chamber-label {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: rgba(117, 82, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            font-family: 'Outfit', sans-serif;
+            pointer-events: none;
+        }
+
+        /* Status Bar */
+        .statusbar {
+            flex-shrink: 0;
+            height: 48px;
+            background: var(--panel);
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 20px;
+        }
+
+        #status-msg {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--orange);
+            text-shadow: 0 0 8px rgba(255, 159, 67, 0.3);
+            transition: color 0.3s;
+            text-align: center;
+        }
+
+        /* Electric plates */
+        .plate {
+            position: absolute;
+            height: 13px;
+            border-radius: 4px;
+            opacity: 0;
+            transition: opacity 0.4s;
+            pointer-events: none;
+        }
+
+        .plate-pos {
+            top: 14%;
+            background: linear-gradient(90deg, rgba(239,68,68,0.75), rgba(239,68,68,0.4));
+            border: 1.5px solid rgba(239,68,68,0.7);
+            box-shadow: 0 0 16px rgba(239,68,68,0.4), inset 0 0 6px rgba(239,68,68,0.2);
+        }
+
+        .plate-neg {
+            bottom: 14%;
+            background: linear-gradient(90deg, rgba(59,130,246,0.75), rgba(59,130,246,0.4));
+            border: 1.5px solid rgba(59,130,246,0.7);
+            box-shadow: 0 0 16px rgba(59,130,246,0.4), inset 0 0 6px rgba(59,130,246,0.2);
+        }
+
+        /* Inactive/uncharged plates style for magnetic mode */
+        .plate.inactive {
+            background: rgba(255, 255, 255, 0.04) !important;
+            border: 1.5px solid rgba(255, 255, 255, 0.12) !important;
+            box-shadow: none !important;
+            opacity: 0.35 !important;
+        }
+
+        .plate.inactive .plate-tag {
+            color: rgba(255, 255, 255, 0.25) !important;
+            text-shadow: none !important;
+        }
+
+        .plate-tag {
+            position: absolute;
+            right: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.1rem;
+            font-weight: 900;
+            line-height: 1;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .plate-pos .plate-tag { color: #fca5a5; }
+        .plate-neg .plate-tag { color: #93c5fd; }
+
+        /* Injector */
+        .injector {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 58px;
+            display: flex;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .injector-body { user-select: none; -webkit-user-select: none;
+            width: 46px;
+            height: 76px;
+            background: linear-gradient(160deg, #251758, #120b2e);
+            border: 1.5px solid rgba(117, 82, 255, 0.4);
+            border-right: none;
+            border-radius: 8px 0 0 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3), inset 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        .injector-nozzle {
+            width: 16px;
+            height: 30px;
+            background: linear-gradient(to right, #251758, #120b2e);
+            border: 1.5px solid rgba(117, 82, 255, 0.4);
+            border-left: none;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .injector-label-tag {
+            position: absolute;
+            bottom: -26px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.58rem;
+            font-weight: 700;
+            color: #7552FF;
+            white-space: nowrap;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* ── TOOLBOX ── */
+        .toolbox {
+            width: 268px;
+            min-width: 268px;
+            background: var(--panel);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 16px 13px;
+            gap: 9px;
+            z-index: 50;
+            overflow-y: auto;
+        }
+
+        .toolbox::-webkit-scrollbar { width: 4px; }
+        .toolbox::-webkit-scrollbar-track { background: transparent; }
+        .toolbox::-webkit-scrollbar-thumb { background: rgba(117, 82, 255, 0.3); border-radius: 2px; }
+
+        .toolbox-title {
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--cyan);
+            text-shadow: 0 0 12px rgba(117, 82, 255, 0.5);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+            padding-bottom: 11px;
+            line-height: 1.5;
+        }
+
+        .section-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.09em;
+            padding: 4px 0 1px;
+        }
+
+        .divider {
+            height: 1px;
+            background: rgba(255,255,255,0.05);
+            margin: 3px 0;
+        }
+
+        /* Mode Buttons */
+        .mode-btn {
+            width: 100%;
+            padding: 11px 10px;
+            border-radius: 10px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.03);
+            color: #94a3b8;
+            transition: all 0.22s;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .mode-btn:hover {
+            transform: translateY(-2px);
+            background: rgba(255,255,255,0.05);
+        }
+
+        .mode-btn.active-electric {
+            background: rgba(255,159,67,0.13);
+            color: var(--orange);
+            border-color: rgba(255,159,67,0.45);
+            box-shadow: 0 0 18px rgba(255,159,67,0.18);
+        }
+
+        .mode-btn.active-magnetic {
+            background: rgba(59,130,246,0.13);
+            color: #93c5fd;
+            border-color: rgba(59,130,246,0.45);
+            box-shadow: 0 0 18px rgba(59,130,246,0.2);
+        }
+
+        .mode-btn.active-lorentz {
+            background: rgba(168,85,247,0.13);
+            color: #d8b4fe;
+            border-color: rgba(168,85,247,0.45);
+            box-shadow: 0 0 18px rgba(168,85,247,0.2);
+        }
+
+        /* Action Buttons */
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 800;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-fire {
+            background: linear-gradient(135deg, rgba(117, 82, 255, 0.25), rgba(90, 70, 218, 0.1));
+            color: #d8b4fe;
+            border: 1px solid rgba(117, 82, 255, 0.45);
+            box-shadow: 0 0 14px rgba(117, 82, 255, 0.18);
+        }
+
+        .btn-fire:hover:not(:disabled) {
+            background: linear-gradient(135deg, rgba(117, 82, 255, 0.4), rgba(90, 70, 218, 0.2));
+            box-shadow: 0 0 26px rgba(117, 82, 255, 0.35);
+            transform: translateY(-2px);
+        }
+
+        .btn-fire:disabled {
+            opacity: 0.38;
+            cursor: not-allowed;
+        }
+
+        .btn-reset {
+            background: rgba(239,68,68,0.1);
+            color: #fca5a5;
+            border: 1px solid rgba(239,68,68,0.25);
+        }
+
+        .btn-reset:hover {
+            background: rgba(239,68,68,0.22);
+        }
+
+        /* Info Cards */
+        .info-card {
+            background: rgba(0,0,0,0.25);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 0.77rem;
+            line-height: 1.8;
+            color: #94a3b8;
+        }
+
+        .info-card .card-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: rgba(117, 82, 255, 0.9);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .info-card p {
+            color: #cbd5e1;
+            margin-bottom: 3px;
+        }
+
+        .formula-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
+            padding: 7px 10px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.83rem;
+            font-weight: 600;
+            color: var(--gold);
+            margin-top: 7px;
+        }
+
+        /* Scrollbar global */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(117, 82, 255, 0.3); border-radius: 3px; }
+
+        /* CSS Animations */
+        @keyframes field-drift {
+            0%   { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: 30; }
+        }
+
+        @keyframes x-pulse {
+            0%, 100% { opacity: 0.32; }
+            50%       { opacity: 0.62; }
+        }
+
+        
+        /* ── Portrait Blocker ── */
+        .portrait-blocker {
+            display: none !important;
+        }
+
+        @media screen and (orientation: portrait) {
+            .portrait-blocker {
+                display: flex !important;
+                position: fixed;
+                inset: 0;
+                z-index: 100000;
+                background: #090617;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                padding: 24px;
+                color: #e2e8f0;
+            }
+            .portrait-blocker i {
+                font-size: 3.2rem;
+                color: #7552FF;
+                margin-bottom: 18px;
+                animation: rotatePhoneAnim 2.5s ease-in-out infinite;
+            }
+            .portrait-blocker h2 {
+                font-size: 1.35rem;
+                font-weight: 800;
+                color: #ffffff;
+                margin-bottom: 10px;
+            }
+            .portrait-blocker p {
+                font-size: 0.95rem;
+                color: #94a3b8;
+                line-height: 1.6;
+                max-width: 320px;
+            }
+        }
+
+        @keyframes rotatePhoneAnim {
+            0%, 20% { transform: rotate(0deg); color: #7552FF; }
+            50%, 70% { transform: rotate(-90deg); color: #a855f7; }
+            90%, 100% { transform: rotate(0deg); color: #7552FF; }
+        }
+
+        /* Smooth Responsive Adjustments for Mobile Landscape */
+        @media (max-height: 500px) and (orientation: landscape), (max-width: 768px) {
+            .drawer-toggle {
+                top: 8px;
+                left: 8px;
+                width: 32px;
+                height: 32px;
+                border-radius: 8px;
+            }
+            .drawer-toggle i {
+                font-size: 0.85rem !important;
+            }
+            .drawer {
+                width: 295px;
+                max-width: 90vw;
+                padding: 8px 10px 12px 10px;
+            }
+            .drawer-header-bar {
+                padding-bottom: 6px;
+                margin-bottom: 6px;
+            }
+            .drawer-home-btn {
+                padding: 4px 10px;
+                font-size: 0.72rem;
+            }
+            .drawer-close-btn {
+                padding: 4px 8px;
+                font-size: 0.72rem;
+            }
+            .drawer-chapter {
+                margin-bottom: 6px;
+            }
+            .drawer-chapter-header {
+                padding: 7px 10px;
+            }
+            .drawer-chapter-label {
+                font-size: 0.74rem;
+                gap: 5px;
+            }
+            .drawer-chapter-label i {
+                font-size: 0.78rem;
+            }
+            .drawer-submenu a {
+                padding: 6px 10px;
+                font-size: 0.7rem;
+            }
+            .topbar {
+                height: 38px;
+                padding: 0 10px 0 46px;
+            }
+            .page-title {
+                font-size: 0.8rem;
+            }
+            .toolbox {
+                width: 175px;
+                min-width: 175px;
+                padding: 8px;
+                gap: 5px;
+            }
+            .toolbox-title {
+                font-size: 0.85rem;
+                margin-bottom: 2px;
+            }
+            .toolbox-subtitle {
+                font-size: 0.62rem;
+                margin-bottom: 4px;
+            }
+            .section-label {
+                font-size: 0.62rem;
+                margin-top: 3px;
+                margin-bottom: 2px;
+            }
+            .btn, .mode-btn {
+                padding: 6px 8px;
+                font-size: 0.68rem;
+                border-radius: 8px;
+            }
+            .divider {
+                margin: 4px 0;
+            }
+            .info-card {
+                padding: 6px 8px;
+            }
+            .info-card .card-title {
+                font-size: 0.7rem;
+                margin-bottom: 3px;
+            }
+            .info-card p {
+                font-size: 0.62rem;
+                line-height: 1.3;
+            }
+            .info-card .formula-box {
+                padding: 3px 6px;
+                font-size: 0.68rem;
+                margin-top: 3px;
+            }
+            .canvas-wrap {
+                padding: 6px !important;
+                overflow: hidden !important;
+            }
+            #vacuum-chamber {
+                transform: none !important;
+                border-radius: 8px;
+            }
+            .injector-body {
+                height: 60px;
+                width: 38px;
+            }
+            .injector-nozzle {
+                height: 24px;
+                width: 13px;
+            }
+            .injector-label-tag {
+                bottom: -18px;
+                font-size: 0.52rem;
+            }
+            .statusbar {
+                height: 32px;
+                padding: 0 10px;
+            }
+            #status-msg {
+                font-size: 0.75rem;
+            }
+            .logo-badge {
+                display: none;
+            }
+        }
+
+        /* Fallback for extreme narrow landscape screens */
+        @media (max-width: 650px) and (orientation: landscape) {
+            .toolbox {
+                width: 155px;
+                min-width: 155px;
+            }
+            .mode-btn, .btn {
+                font-size: 0.64rem;
+                padding: 5px 6px;
+            }
+            .page-title {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Portrait Blocker -->
+    <div class="portrait-blocker">
+        <i class="fa-solid fa-mobile-screen"></i>
+        <h2>يرجى تدوير الجهاز</h2>
+        <p>هذه التجربة مصممة لتعمل في الوضع الأفقي (Landscape)<br>للحصول على أفضل رؤية وتفاعل.</p>
+    </div>
+
+    <div class="app">
+
+        <!-- ════ MAIN ════ -->
+        <div class="main">
+
+            <!-- Top Bar -->
+            <div class="topbar">
+                <div class="page-title">حركة الجسيمات المشحونة في المجالات</div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <a href="../index.html?showMenu=true" style="text-decoration: none; display: flex; align-items: center; gap: 8px; background: rgba(117, 82, 255, 0.1); border: 1px solid rgba(117, 82, 255, 0.25); border-radius: 10px; color: var(--cyan); font-size: 0.8rem; font-weight: 700; padding: 7px 14px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(117, 82, 255, 0.2)'" onmouseout="this.style.background='rgba(117, 82, 255, 0.1)'">
+                        <i class="fa-solid fa-chevron-right" style="font-size: 0.75rem;"></i> التجارب الرئيسية
+                    </a>
+                    <span id="mode-badge" class="mode-badge idle">
+                        <i class="fa-solid fa-circle-dot"></i> اختر وضعاً
+                    </span>
+                    <div class="logo-badge">
+                        <span class="lg">Raqeem Labs</span>
+                        <span class="sm">مختبرات رقيم الافتراضية</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Canvas -->
+            <div class="canvas-wrap">
+                <div id="vacuum-chamber">
+                    <span class="chamber-label">منطقة المجال</span>
+
+                    <!-- Electric Plates (for electric/magnetic/lorentz modes) -->
+                    <div class="plate plate-pos" id="plate-pos">
+                        <span class="plate-tag">+</span>
+                    </div>
+                    <div class="plate plate-neg" id="plate-neg">
+                        <span class="plate-tag">-</span>
+                    </div>
+
+                    <!-- Main SVG layer -->
+                    <svg id="field-svg" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;">
+                        <defs>
+                            <radialGradient id="crt-glow" cx="50%" cy="50%" r="70%">
+                                <stop offset="0%" stop-color="rgba(255, 255, 255, 0.6)" />
+                                <stop offset="100%" stop-color="rgba(238, 242, 255, 0.3)" />
+                            </radialGradient>
+                            <linearGradient id="e-field-glow" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="rgba(239, 68, 68, 0.12)" />
+                                <stop offset="100%" stop-color="rgba(59, 130, 246, 0.12)" />
+                            </linearGradient>
+                            <radialGradient id="b-field-glow" cx="50%" cy="50%" r="60%">
+                                <stop offset="0%" stop-color="rgba(59, 130, 246, 0.15)" />
+                                <stop offset="100%" stop-color="rgba(255, 255, 255, 0)" />
+                            </radialGradient>
+                            <marker id="arrow-e" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+                                <path d="M0,0 L8,4 L0,8 Z" fill="#ea580c"/>
+                            </marker>
+                        </defs>
+                        <!-- CRT Glass Envelope -->
+                        <path id="crt-glass-envelope" fill="url(#crt-glow)" stroke="rgba(117, 82, 255, 0.35)" stroke-width="2" style="filter: drop-shadow(0 2px 8px rgba(117, 82, 255, 0.15));" />
+                        
+                        <g id="field-halos"></g>
+                        <g id="e-lines"></g>
+                        <g id="b-symbols"></g>
+                        <g id="p-trail"></g>
+                        <g id="p-group" style="display:none;">
+                            <circle id="p-glow"   r="18" fill="rgba(255,159,67,0.12)" cx="0" cy="0"/>
+                            <circle id="p-circle" r="11" fill="#ff9f43" cx="0" cy="0"
+                                stroke="rgba(255,200,110,0.85)" stroke-width="2"
+                                style="filter:drop-shadow(0 0 9px rgba(255,159,67,0.95))"/>
+                            <text id="p-label" x="0" y="4" text-anchor="middle"
+                                font-family="Outfit,sans-serif" font-size="10" font-weight="700" fill="#fff">+q</text>
+                        </g>
+                        <g id="f-arrows" style="display:none;"></g>
+                    </svg>
+
+                    <!-- Particle Injector (Beam Emitter) -->
+                    <div class="injector">
+                        <div class="injector-body">
+                            <!-- Cathode Filament Glow -->
+                            <div class="filament-glow" style="display:none;"></div>
+                            
+                            <svg width="24" height="24" viewBox="0 0 28 28" style="position:relative;z-index:2;">
+                                <circle cx="14" cy="14" r="11" fill="none" stroke="rgba(0,210,255,0.4)" stroke-width="1.5"/>
+                                <circle cx="14" cy="14" r="5" fill="#00d2ff" style="filter:drop-shadow(0 0 4px #00d2ff);"/>
+                            </svg>
+                            <span class="injector-label-tag">مطلق الشحنة</span>
+                        </div>
+                        <div class="injector-nozzle"></div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Status Bar -->
+            <div class="statusbar">
+                <div id="status-msg">اختر وضع المجال ثم اضغط "إطلاق الشحنة"</div>
+            </div>
+        </div>
+
+        <!-- ════ TOOLBOX ════ -->
+        <div class="toolbox">
+
+            <div class="toolbox-title">
+                لوحة التحكم
+                <br><span style="font-size:0.68rem;color:#64748b;font-weight:500;">قوة لورنتز</span>
+            </div>
+
+            <div class="section-label">اختر وضع المجال</div>
+
+            <button class="mode-btn" id="btn-electric" onclick="setMode('electric')">
+                <i class="fa-solid fa-bolt" style="margin-left:6px;color:#ff9f43;"></i>
+                تأثير المجال الكهربائي فقط
+            </button>
+
+            <button class="mode-btn" id="btn-magnetic" onclick="setMode('magnetic')">
+                <i class="fa-solid fa-circle-dot" style="margin-left:6px;color:#93c5fd;"></i>
+                تأثير المجال المغناطيسي فقط
+            </button>
+
+            <button class="mode-btn" id="btn-lorentz" onclick="setMode('lorentz')">
+                <i class="fa-solid fa-infinity" style="margin-left:6px;color:#d8b4fe;"></i>
+                تأثير المجالين معاً (قوة لورنتز)
+            </button>
+
+            <div class="divider"></div>
+            <div class="section-label">الإجراءات</div>
+
+            <button class="btn btn-fire" id="btn-fire" onclick="fireParticle()" disabled>
+                <i class="fa-solid fa-play" style="margin-left:6px;"></i>
+                إطلاق الشحنة
+            </button>
+
+            <button class="btn btn-reset" onclick="resetExperiment()">
+                <i class="fa-solid fa-rotate-right" style="margin-left:6px;"></i>
+                إعادة تعيين
+            </button>
+
+            <div class="divider"></div>
+            <div class="section-label">معلومات الفيزياء</div>
+
+            <!-- Idle card -->
+            <div class="info-card" id="card-idle">
+                <div class="card-title">تعليمات التجربة</div>
+                <p>1. اختر وضع المجال من الأعلى.</p>
+                <p>2. اضغط "إطلاق الشحنة" لإطلاق جسيم (+q).</p>
+                <p>3. راقب كيف تؤثر المجالات على مسار الجسيم.</p>
+                <p>4. أعد التعيين للتجربة مجدداً.</p>
+            </div>
+
+            <!-- Electric card -->
+            <div class="info-card" id="card-electric" style="display:none;">
+                <div class="card-title">المجال الكهربائي (E)</div>
+                <p>الصفيحة العليا: موجبة (+)</p>
+                <p>الصفيحة السفلى: سالبة (-)</p>
+                <p>اتجاه E: من + الى - (للاسفل)</p>
+                <p>على (+q): قوة للاسفل</p>
+                <div class="formula-box">F&#8337; = qE  (للاسفل)</div>
+            </div>
+
+            <!-- Magnetic card -->
+            <div class="info-card" id="card-magnetic" style="display:none;">
+                <div class="card-title">المجال المغناطيسي (B)</div>
+                <p>اتجاه B: داخل الشاشة (X)</p>
+                <p>القوة FB عمودية دائماً على متجه السرعة وتعمل كقوة مركزية (Fc).</p>
+                <p>الانطلاق ثابت والمسار دائري عمودي على خطوط المجال.</p>
+                <div class="formula-box">FB = q(v × B) = Fc</div>
+                <div class="formula-box" style="margin-top:3px;">r = mv / qB  (مسار دائري منتظم)</div>
+            </div>
+
+            <!-- Lorentz card -->
+            <div class="info-card" id="card-lorentz" style="display:none;">
+                <div class="card-title">قوة لورنتز الكاملة</div>
+                <p>المجالان E و B معاً</p>
+                <p>Fe (للأسفل) = Fb (للأعلى)</p>
+                <p>التوازن: مسار مستقيم!</p>
+                <div class="formula-box">F = q(E + v x B) = 0</div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // ════════════════════════════════════════════
+        //  STATE
+        // ════════════════════════════════════════════
+        let currentMode = null;
+        let isRunning = false;
+        let hasImpacted = false;
+        let animFrame = null;
+        let px = 0, py = 0, vx = 0, vy = 0;
+        let angle = 0;
+        let trailPts = [];
+        let inMagneticOrbit = false;
+        let orbitAngle = 0;
+        let orbitRadius = 60;
+        let orbitCenter = { x: 0, y: 0 };
+
+        const chamber    = document.getElementById('vacuum-chamber');
+        const eLines     = document.getElementById('e-lines');
+        const bSymbols   = document.getElementById('b-symbols');
+        const pTrail     = document.getElementById('p-trail');
+        const pGroup     = document.getElementById('p-group');
+        const pCircle    = document.getElementById('p-circle');
+        const pGlow      = document.getElementById('p-glow');
+        const pLabel     = document.getElementById('p-label');
+        const fArrows    = document.getElementById('f-arrows');
+        const platePos   = document.getElementById('plate-pos');
+        const plateNeg   = document.getElementById('plate-neg');
+        const statusMsg  = document.getElementById('status-msg');
+        const modeBadge  = document.getElementById('mode-badge');
+        const btnFire    = document.getElementById('btn-fire');
+        const btnReset   = document.querySelector('.btn-reset');
+
+        // ════════════════════════════════════════════
+        //  EXPOSE TO GLOBAL (For existing inline onclicks)
+        // ════════════════════════════════════════════
+        window.setMode = setMode;
+        window.fireParticle = fireParticle;
+        window.resetExperiment = resetExperiment;
+
+        // ════════════════════════════════════════════
+        //  UTILITY
+        // ════════════════════════════════════════════
+        function dims() {
+            const r = chamber.getBoundingClientRect();
+            return { w: r.width, h: r.height };
+        }
+
+        function setStatus(msg, color) {
+            statusMsg.textContent = msg;
+            statusMsg.style.color = color || 'var(--orange)';
+        }
+
+        function ns(tag) {
+            return document.createElementNS('http://www.w3.org/2000/svg', tag);
+        }
+
+        function setAttr(el, attrs) {
+            for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+        }
+
+        // ════════════════════════════════════════════
+        //  MODE SELECTION
+        // ════════════════════════════════════════════
+        function setMode(mode) {
+            if (isRunning) return;
+            currentMode = mode;
+
+            document.querySelectorAll('.mode-btn').forEach(b => b.className = 'mode-btn');
+            ['card-idle','card-electric','card-magnetic','card-lorentz'].forEach(id => {
+                document.getElementById(id).style.display = 'none';
+            });
+
+            clearAll();
+
+            if (mode === 'electric') {
+                document.getElementById('btn-electric').classList.add('active-electric');
+                document.getElementById('card-electric').style.display = 'block';
+                modeBadge.className = 'mode-badge electric';
+                modeBadge.innerHTML = '<i class="fa-solid fa-bolt"></i> مجال كهربائي';
+                drawEField();
+                setStatus('المجال الكهربائي نشط — الصفيحة العليا (+)، السفلى (-)', 'var(--orange)');
+            } else if (mode === 'magnetic') {
+                document.getElementById('btn-magnetic').classList.add('active-magnetic');
+                document.getElementById('card-magnetic').style.display = 'block';
+                modeBadge.className = 'mode-badge magnetic';
+                modeBadge.innerHTML = '<i class="fa-solid fa-circle-dot"></i> مجال مغناطيسي';
+                drawBField();
+                setStatus('المجال المغناطيسي نشط (داخل الشاشة) — رموز X', '#93c5fd');
+            } else if (mode === 'lorentz') {
+                document.getElementById('btn-lorentz').classList.add('active-lorentz');
+                document.getElementById('card-lorentz').style.display = 'block';
+                modeBadge.className = 'mode-badge lorentz';
+                modeBadge.innerHTML = '<i class="fa-solid fa-infinity"></i> قوة لورنتز';
+                drawEField();
+                drawBField();
+                setStatus('المجالان E + B نشطان — توقع مساراً مستقيماً عند التوازن', '#d8b4fe');
+            }
+
+            btnFire.disabled = false;
+        }
+
+        // ════════════════════════════════════════════
+        //  CLEAR
+        // ════════════════════════════════════════════
+        function clearAll() {
+            eLines.innerHTML   = '';
+            bSymbols.innerHTML = '';
+            pTrail.innerHTML   = '';
+            fArrows.innerHTML  = '';
+            const halos = document.getElementById('field-halos');
+            if (halos) halos.innerHTML = '';
+            fArrows.style.display = 'none';
+            pGroup.style.display  = 'none';
+            platePos.style.opacity = '0';
+            plateNeg.style.opacity = '0';
+            if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
+            isRunning = false;
+        }
+
+        // ════════════════════════════════════════════
+        //  DRAW ELECTRIC FIELD
+        // ════════════════════════════════════════════
+        function drawEField() {
+            const { w, h } = dims();
+            const deflStart = w * 0.30;
+            const deflEnd   = w - 36;
+            
+            if (currentMode === 'lorentz') {
+                // Show only the bottom negative plate
+                platePos.style.opacity = '0';
+                plateNeg.classList.remove('inactive');
+                plateNeg.style.opacity = '1';
+                
+                const yBot = h - 24;
+                plateNeg.style.left = `${deflStart}px`;
+                plateNeg.style.width = `${deflEnd - deflStart}px`;
+                plateNeg.style.top = `${yBot}px`;
+                plateNeg.style.bottom = 'auto';
+
+                // Draw Electric Field Halo in the bottom half
+                const halos = document.getElementById('field-halos');
+                if (halos) {
+                    const r = ns('rect');
+                    setAttr(r, {
+                        x: deflStart,
+                        y: h / 2,
+                        width: deflEnd - deflStart,
+                        height: yBot - (h / 2),
+                        fill: 'url(#e-field-glow)',
+                        style: 'filter: blur(14px);'
+                    });
+                    halos.appendChild(r);
+                }
+
+                // E field lines drawn in the bottom half (pointing downwards)
+                const lineCount = Math.max(6, Math.min(16, Math.floor((deflEnd - deflStart) / 45)));
+                const topY  = (h / 2) + 8;
+                const botY  = yBot - 4;
+                for (let i = 0; i < lineCount; i++) {
+                    const x = deflStart + 15 + i * ((deflEnd - deflStart - 30) / (lineCount - 1));
+
+                    const line = ns('line');
+                    setAttr(line, {
+                        x1: x, y1: topY, x2: x, y2: botY,
+                        stroke: 'rgba(255,159,67,0.45)',
+                        'stroke-width': '1.8',
+                        'stroke-dasharray': '6 4'
+                    });
+                    line.style.animation = `field-drift ${1.0 + (i % 3) * 0.25}s linear infinite`;
+                    eLines.appendChild(line);
+
+                    const midY = (topY + botY) / 2;
+                    const tri = ns('polygon');
+                    tri.setAttribute('points', `${x},${midY+6} ${x-4},${midY-2} ${x+4},${midY-2}`);
+                    tri.setAttribute('fill', 'rgba(255,159,67,0.85)');
+                    eLines.appendChild(tri);
+                }
+            } else {
+                // Electric mode: show both plates, full field
+                platePos.style.opacity = '1';
+                platePos.classList.remove('inactive');
+                plateNeg.style.opacity = '1';
+                plateNeg.classList.remove('inactive');
+                
+                const yTop = 18;
+                const yBot = h - 24;
+
+                platePos.style.left = `${deflStart}px`;
+                platePos.style.width = `${deflEnd - deflStart}px`;
+                platePos.style.top = `${yTop}px`;
+                platePos.style.bottom = 'auto';
+
+                plateNeg.style.left = `${deflStart}px`;
+                plateNeg.style.width = `${deflEnd - deflStart}px`;
+                plateNeg.style.top = `${yBot}px`;
+                plateNeg.style.bottom = 'auto';
+
+                // Draw Electric Field Halo completely between plates
+                const halos = document.getElementById('field-halos');
+                if (halos) {
+                    const r = ns('rect');
+                    setAttr(r, {
+                        x: deflStart,
+                        y: yTop + 14,
+                        width: deflEnd - deflStart,
+                        height: yBot - yTop - 16,
+                        fill: 'url(#e-field-glow)',
+                        style: 'filter: blur(14px);'
+                    });
+                    halos.appendChild(r);
+                }
+
+                // E field lines fully between plates
+                const lineCount = Math.max(6, Math.min(16, Math.floor((deflEnd - deflStart) / 45)));
+                const topY  = yTop + 14;
+                const botY  = yBot - 4;
+                for (let i = 0; i < lineCount; i++) {
+                    const x = deflStart + 15 + i * ((deflEnd - deflStart - 30) / (lineCount - 1));
+
+                    const line = ns('line');
+                    setAttr(line, {
+                        x1: x, y1: topY, x2: x, y2: botY,
+                        stroke: 'rgba(255,159,67,0.45)',
+                        'stroke-width': '1.8',
+                        'stroke-dasharray': '6 4'
+                    });
+                    line.style.animation = `field-drift ${1.0 + (i % 3) * 0.25}s linear infinite`;
+                    eLines.appendChild(line);
+
+                    const midY = (topY + botY) / 2;
+                    const tri = ns('polygon');
+                    tri.setAttribute('points', `${x},${midY+6} ${x-4},${midY-2} ${x+4},${midY-2}`);
+                    tri.setAttribute('fill', 'rgba(255,159,67,0.85)');
+                    eLines.appendChild(tri);
+                }
+            }
+        }
+
+        // ════════════════════════════════════════════
+        //  DRAW MAGNETIC FIELD
+        // ════════════════════════════════════════════
+        function drawBField() {
+            const { w, h } = dims();
+            bSymbols.innerHTML = '';
+            
+            const deflStart = w * 0.30;
+            const deflEnd   = w - 36;
+            const R         = Math.min(80, Math.max(46, Math.floor(h * 0.22)));
+            
+            let startX, endX, topBound, botBound;
+            if (currentMode === 'lorentz') {
+                startX    = deflStart;
+                endX      = deflEnd;
+                topBound  = 16;
+                botBound  = (h / 2) - 8; // Full upper half
+            } else {
+                startX    = Math.max(40, deflStart - R - 20);
+                endX      = w - 24;
+                topBound  = 16;
+                botBound  = h - 16; // Full height
+            }
+
+            if (currentMode === 'magnetic') {
+                platePos.style.opacity = '0';
+                plateNeg.style.opacity = '0';
+            }
+
+            // Draw Magnetic Field Halo
+            const halos = document.getElementById('field-halos');
+            if (halos) {
+                const r = ns('rect');
+                setAttr(r, {
+                    x: startX,
+                    y: topBound,
+                    width: endX - startX,
+                    height: botBound - topBound,
+                    fill: 'url(#b-field-glow)',
+                    style: 'filter: blur(20px);'
+                });
+                halos.appendChild(r);
+            }
+            
+            const availW = (endX - 10) - (startX + 15);
+            const cols = Math.max(4, Math.round(availW / 38));
+            const stepX = availW / cols;
+
+            const availH = (botBound - 8) - (topBound + 10);
+            const rows = Math.max(1, Math.round(availH / 28));
+            const stepY = rows > 0 ? availH / rows : 0;
+
+            let count = 0;
+            for (let r = 0; r <= rows; r++) {
+                const cy = topBound + 10 + r * stepY;
+                for (let c = 0; c <= cols; c++) {
+                    const cx = startX + 15 + c * stepX;
+                    const delay = (count % 12) * 0.08;
+                    count++;
+                    const sz = 5;
+
+                    const g = ns('g');
+                    g.style.animation = `x-pulse 2.2s ease-in-out ${delay}s infinite`;
+
+                    const circ = ns('circle');
+                    setAttr(circ, { cx, cy, r: sz + 2.5, fill: 'none', stroke: 'rgba(59,130,246,0.3)', 'stroke-width': '1.0' });
+                    g.appendChild(circ);
+
+                    [[cx-sz, cy-sz, cx+sz, cy+sz], [cx+sz, cy-sz, cx-sz, cy+sz]].forEach(([x1_pt, y1_pt, x2_pt, y2_pt]) => {
+                        const l = ns('line');
+                        setAttr(l, { x1: x1_pt, y1: y1_pt, x2: x2_pt, y2: y2_pt, stroke: '#2563eb', 'stroke-width': '1.8', 'stroke-linecap': 'round' });
+                        g.appendChild(l);
+                    });
+
+                    bSymbols.appendChild(g);
+                }
+            }
+
+            const lbl = ns('text');
+            setAttr(lbl, {
+                x: endX - 45, y: topBound + 20,
+                'font-size': '11', 'font-family': 'Outfit,sans-serif',
+                'font-weight': '700', fill: '#1d4ed8'
+            });
+            lbl.textContent = 'B (X)';
+            bSymbols.appendChild(lbl);
+        }
+
+        // ════════════════════════════════════════════
+        //  FIRE PARTICLE & ANIMATION
+        // ════════════════════════════════════════════
+        function fireParticle() {
+            if (isRunning || !currentMode) return;
+
+            isRunning = true;
+            btnFire.disabled = true;
+
+            if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
+
+            pTrail.style.transition = '';
+            pTrail.style.opacity = '1';
+            pTrail.innerHTML  = '';
+            fArrows.innerHTML = '';
+            fArrows.style.display = 'block';
+
+            const { w, h } = dims();
+
+            // Strictly initialize globals
+            px = 62;
+            py = h / 2;
+            vx = 2.4;
+            vy = 0;
+            angle = 0;
+            trailPts = [];
+            hasImpacted = false;
+            inMagneticOrbit = false;
+            orbitAngle = 0;
+
+            orbitRadius = Math.min(80, Math.max(46, Math.floor(h * 0.22)));
+            const deflStart = w * 0.30;
+            orbitCenter = {
+                x: deflStart,
+                y: (h / 2) - orbitRadius
+            };
+
+            pGroup.style.display = 'block';
+            moveParticle(px, py);
+
+            animFrame = requestAnimationFrame(animateStep);
+        }
+
+        function animateStep() {
+            if (!isRunning) return;
+
+            const { w, h } = dims();
+            const deflStart = w * 0.30;
+            const deflEnd   = w - 36;
+            const yBotNeck  = h - 24;
+
+            if (currentMode === 'electric') {
+                if (px >= deflStart && px <= deflEnd) {
+                    const ay = 0.038; // Fe = qE (downwards towards negative plate)
+                    vy += ay;
+                }
+                px += vx;
+                py += vy;
+
+                // Check impact with negative lower plate
+                if (py >= yBotNeck && px >= deflStart && px <= deflEnd + 15 && !hasImpacted) {
+                    py = yBotNeck;
+                    hasImpacted = true;
+                    isRunning = false;
+                    btnFire.disabled = false;
+                    moveParticle(px, py);
+                    drawForces(px, py);
+                    trailPts.push({ x: px, y: py });
+                    renderTrail(trailPts);
+                    setStatus('اصطدم الجسيم بالصفيحة السالبة بعد انحرافه بمسار قطع مكافئ (Parabolic) بتأثير القوة الكهربائية Fe = qE', 'var(--orange)');
+                    if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
+                    return;
+                }
+            } 
+            else if (currentMode === 'magnetic') {
+                if (!inMagneticOrbit) {
+                    if (px < deflStart) {
+                        px += vx;
+                        py = h / 2;
+                    } else {
+                        inMagneticOrbit = true;
+                        px = deflStart;
+                        py = h / 2;
+                        orbitAngle = 0;
+                    }
+                } else {
+                    const v0 = 2.4;
+                    const dTheta = v0 / orbitRadius;
+                    orbitAngle += dTheta;
+
+                    px = orbitCenter.x + orbitRadius * Math.sin(orbitAngle);
+                    py = orbitCenter.y + orbitRadius * Math.cos(orbitAngle);
+                    vx = v0 * Math.cos(orbitAngle);
+                    vy = -v0 * Math.sin(orbitAngle);
+
+                    if (orbitAngle >= 2 * Math.PI && !hasImpacted) {
+                        hasImpacted = true;
+                        setStatus('يدور الجسيم في مسار دائري منتظم ومستمر (Continuous Orbit) بنصف قطر r = mv/qB بتأثير القوة المغناطيسية المركزية Fb', '#93c5fd');
+                    }
+                }
+            } 
+            else if (currentMode === 'lorentz') {
+                // Lorentz mode: Fe and Fb are equal and opposite (Velocity Selector)
+                px += vx;
+                py = h / 2;
+                vy = 0;
+
+                if (px >= deflEnd && !hasImpacted) {
+                    hasImpacted = true;
+                    setStatus('تحرك الجسيم بخط مستقيم تماماً لتساوي القوتين Fe و Fb وتعاكسهما (محصلة قوة لورنتز = 0) — مبدأ منتقي السرعات', '#d8b4fe');
+                }
+            }
+
+            // CRITICAL DOM UPDATE: physically move the visual element
+            moveParticle(px, py);
+            drawForces(px, py);
+
+            // Render trail
+            trailPts.push({ x: px, y: py });
+            const maxTrail = currentMode === 'magnetic' 
+                ? Math.round((2 * Math.PI * orbitRadius / 2.4) + (deflStart - 62) / 2.4 + 10) 
+                : 180;
+            if (trailPts.length > maxTrail) trailPts.shift();
+            renderTrail(trailPts);
+
+            // Educational status update on crossing screen threshold
+            if (px >= deflEnd && !hasImpacted && currentMode !== 'magnetic') {
+                hasImpacted = true;
+                if (currentMode === 'electric') {
+                    setStatus('انحرف الجسيم المشحون نحو الأسفل بمسار قطع مكافئ (Parabolic) بتأثير القوة الكهربائية Fe = qE', 'var(--orange)');
+                }
+            }
+
+            // Smooth exit: check if particle has flown completely outside screen boundaries
+            const isOutOfBounds = (px > w + 35) || (py < -35) || (py > h + 35) || (px < -35);
+
+            if (isOutOfBounds) {
+                isRunning = false;
+                pGroup.style.display = 'none';
+                fArrows.style.display = 'none';
+                btnFire.disabled = false;
+                if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
+
+                // Fade out the trail smoothly so no orphaned tail remains visible on screen
+                pTrail.style.transition = 'opacity 0.4s ease';
+                pTrail.style.opacity = '0';
+                setTimeout(() => {
+                    pTrail.innerHTML = '';
+                    pTrail.style.transition = '';
+                    pTrail.style.opacity = '1';
+                    trailPts = [];
+                }, 400);
+
+                return;
+            }
+
+            if (isRunning) {
+                animFrame = requestAnimationFrame(animateStep);
+            }
+        }
+
+        function moveParticle(x, y) {
+            pCircle.setAttribute('cx', x);
+            pCircle.setAttribute('cy', y);
+            pGlow.setAttribute('cx', x);
+            pGlow.setAttribute('cy', y);
+            pLabel.setAttribute('x', x);
+            pLabel.setAttribute('y', y + 4);
+        }
+
+        function drawCRTOutline() {
+            const { w, h } = dims();
+            const path = document.getElementById('crt-glass-envelope');
+            if (path) {
+                path.style.display = 'none'; // Hide the CRT envelope
+            }
+
+            const x2 = w - 16;
+
+            // Adjust injector position
+            const inj = document.querySelector('.injector');
+            if (inj) {
+                inj.style.left = '12px';
+            }
+        }
+
+        function renderTrail(pts) {
+            if (pts.length < 2) {
+                pTrail.innerHTML = '';
+                return;
+            }
+            let d = 'M ' + pts[0].x.toFixed(1) + ' ' + pts[0].y.toFixed(1);
+            for (let i = 1; i < pts.length; i++) {
+                d += ' L ' + pts[i].x.toFixed(1) + ' ' + pts[i].y.toFixed(1);
+            }
+            
+            const color = currentMode === 'electric' ? '#ff9f43'
+                        : currentMode === 'magnetic' ? '#93c5fd'
+                        : '#d8b4fe';
+
+            let trailPath = document.getElementById('active-trail-path');
+            if (!trailPath) {
+                pTrail.innerHTML = '';
+                trailPath = ns('path');
+                trailPath.id = 'active-trail-path';
+                trailPath.setAttribute('fill', 'none');
+                trailPath.setAttribute('stroke-linecap', 'round');
+                trailPath.setAttribute('stroke-linejoin', 'round');
+                pTrail.appendChild(trailPath);
+            }
+            trailPath.setAttribute('d', d);
+            trailPath.setAttribute('stroke', color);
+            trailPath.setAttribute('stroke-width', '2.6');
+            trailPath.setAttribute('opacity', '0.9');
+            trailPath.style.filter = 'drop-shadow(0 0 6px ' + color + ')';
+        }
+
+        // ════════════════════════════════════════════
+        //  FORCE ARROWS
+        // ════════════════════════════════════════════
+        function drawForces(px, py) {
+            fArrows.innerHTML = '';
+            const L = 34, hs = 7;
+
+            function arrow(x1, y1, x2, y2, color, lbl) {
+                const g = ns('g');
+
+                const ln = ns('line');
+                setAttr(ln, { x1, y1, x2, y2, stroke: color, 'stroke-width': '2.6', 'stroke-linecap': 'round' });
+                g.appendChild(ln);
+
+                // Head
+                const dx = x2-x1, dy = y2-y1, len = Math.hypot(dx,dy);
+                const ux = dx/len, uy = dy/len, nx = -uy, ny = ux;
+                const bx = x2 - ux*hs, by = y2 - uy*hs;
+                const poly = ns('polygon');
+                poly.setAttribute('points',
+                    `${x2},${y2} ${bx+nx*hs*0.5},${by+ny*hs*0.5} ${bx-nx*hs*0.5},${by-ny*hs*0.5}`);
+                poly.setAttribute('fill', color);
+                g.appendChild(poly);
+
+                // Label
+                const t = ns('text');
+                setAttr(t, {
+                    x: x2 + (dx >= 0 ? 7 : -7),
+                    y: y2 + (dy > 0 ? 14 : -8),
+                    'font-size': '10', 'font-family': 'Outfit,sans-serif',
+                    'font-weight': '700', fill: color,
+                    'text-anchor': dx < 0 ? 'end' : 'start'
+                });
+                t.textContent = lbl;
+                g.appendChild(t);
+                fArrows.appendChild(g);
+            }
+
+            const { w, h } = dims();
+            const deflStart = w * 0.30;
+            const deflEnd   = w - 16;
+
+            if (currentMode === 'electric') {
+                if (px >= deflStart && px <= deflEnd && !hasImpacted) {
+                    arrow(px, py, px, py + L, 'rgba(255,159,67,0.95)', 'FE');
+                }
+            } else if (currentMode === 'magnetic') {
+                if (inMagneticOrbit) {
+                    const speed = Math.hypot(vx, vy) || 2.4;
+                    const fx = (vy / speed) * L;
+                    const fy = (-vx / speed) * L;
+                    arrow(px, py, px + fx, py + fy, 'rgba(147,197,253,0.95)', 'FB (Fc)');
+                }
+            } else if (currentMode === 'lorentz') {
+                if (px >= deflStart && px <= deflEnd) {
+                    arrow(px, py + 3, px, py + L + 3, 'rgba(255,159,67,0.95)', 'FE');
+                    arrow(px, py - 3, px, py - L - 3, 'rgba(147,197,253,0.95)', 'FB');
+                }
+            }
+        }
+
+        // ════════════════════════════════════════════
+        //  RESET
+        // ════════════════════════════════════════════
+        function resetExperiment() {
+            clearAll();
+            currentMode = null;
+            ['card-idle','card-electric','card-magnetic','card-lorentz'].forEach(id => {
+                document.getElementById(id).style.display = 'none';
+            });
+            document.getElementById('card-idle').style.display = 'block';
+            document.querySelectorAll('.mode-btn').forEach(b => b.className = 'mode-btn');
+            modeBadge.className = 'mode-badge idle';
+            modeBadge.innerHTML = '<i class="fa-solid fa-circle-dot"></i> اختر وضعاً';
+            if(btnFire) btnFire.disabled = true;
+            setStatus('اختر وضع المجال ثم اضغط "إطلاق الشحنة"', 'var(--orange)');
+            drawCRTOutline();
+            
+            const { h } = dims();
+            moveParticle(62, h / 2);
+        }
+
+        // ════════════════════════════════════════════
+        //  RESIZE & INITIALIZE
+        // ════════════════════════════════════════════
+        window.addEventListener('resize', () => {
+            drawCRTOutline();
+            if (!isRunning && currentMode) {
+                const halos = document.getElementById('field-halos');
+                if (halos) halos.innerHTML = '';
+                eLines.innerHTML = ''; bSymbols.innerHTML = '';
+                if (currentMode === 'electric' || currentMode === 'lorentz') drawEField();
+                if (currentMode === 'magnetic' || currentMode === 'lorentz') drawBField();
+            }
+        });
+
+        // Add explicit event listeners to buttons to enforce logic
+        if (btnFire) btnFire.addEventListener('click', fireParticle);
+        if (btnReset) btnReset.addEventListener('click', resetExperiment);
+
+        // Initial draw
+        setTimeout(drawCRTOutline, 60);
+    });
+    </script>
+    <script src="../js/raqeem-navigation.js"></script>
+</body>
+</html>

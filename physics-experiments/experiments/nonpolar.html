@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>العازل غير القطبي | مختبر رقيم</title>
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="../fonts/google-fonts.css">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="../libs/fontawesome.min.css">
+    <!-- GSAP -->
+    <script src="../libs/gsap.min.js"></script>
+    <!-- Tailwind -->
+    <link rel="stylesheet" href="../libs/tailwind.css">
+    <link rel="stylesheet" href="../engine/elite-styles.css">
+    <link rel="stylesheet" href="../css/raqeem-drawer.css">
+    <script src="../engine/elite-engine.js" defer></script>
+    
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Dipole Molecule Capsule */
+        .dipole-molecule {
+            position: absolute;
+            width: 48px;
+            height: 22px;
+            border-radius: 11px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1.2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 3px;
+            transform-origin: center center;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            cursor: default;
+        }
+
+        .dipole-molecule.aligned {
+            border-color: rgba(0, 210, 255, 0.7);
+            box-shadow: 0 0 12px rgba(0, 210, 255, 0.4);
+        }
+
+        .charge-atom {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 900;
+            font-family: 'Outfit', sans-serif;
+            color: #ffffff;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .charge-atom.neg {
+            background: radial-gradient(circle at 35% 35%, #60a5fa, #2563eb);
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.95);
+        }
+
+        .charge-atom.pos {
+            background: radial-gradient(circle at 35% 35%, #f87171, #dc2626);
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.95);
+        }
+
+        .molecular-bond {
+            flex: 1;
+            height: 1.5px;
+            background: repeating-linear-gradient(90deg, rgba(255,255,255,0.4), rgba(255,255,255,0.4) 2px, transparent 2px, transparent 4px);
+            margin: 0 2px;
+        }
+
+        /* Electric Field Line Flow */
+        .ext-line {
+            stroke-dasharray: 6 4;
+            animation: flowLines 1.2s linear infinite;
+        }
+        @keyframes flowLines {
+            to { stroke-dashoffset: -10; }
+        }
+
+        .int-line {
+            stroke-dasharray: 5 3;
+            animation: flowIntLines 1.2s linear infinite;
+        }
+        @keyframes flowIntLines {
+            to { stroke-dashoffset: -8; }
+        }
+    </style>
+    <link rel="stylesheet" href="../css/raqeem-experiment.css">
+    <style>
+        /* === 1. BOUNDED EXPERIMENT VIEWPORT (ZERO WINDOW SCROLL) === */
+        html, body {
+            height: 100% !important;
+            height: 100dvh !important;
+            min-height: 0 !important;
+            overflow: hidden !important;
+            touch-action: none !important;
+        }
+
+        #workspace {
+            width: 100% !important;
+            min-width: 0 !important;
+            height: 100% !important;
+            overflow: hidden !important;
+            touch-action: none !important;
+        }
+
+        /* === 2. HARDWARE ACCELERATED DIELECTRIC SLAB === */
+        #dielectricObj {
+            touch-action: none !important;
+            user-select: none;
+            -webkit-user-select: none;
+            will-change: transform;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+
+        /* === 3. AUTHENTIC NON-POLAR MATERIAL THEMES === */
+        /* Polyethylene (البولي إثيلين) - Translucent Frosted Polymer */
+        .material-pe {
+            background: linear-gradient(135deg, rgba(248, 250, 252, 0.16), rgba(203, 213, 225, 0.08)) !important;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1.5px solid rgba(255, 255, 255, 0.45) !important;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8), inset 0 1px 2px rgba(255, 255, 255, 0.4), inset 0 -2px 10px rgba(0, 0, 0, 0.35) !important;
+        }
+
+        /* Silicate Glass (الزجاج) - Refractive Glassmorphism */
+        .material-glass {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(15, 23, 42, 0.3)) !important;
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1.5px solid rgba(56, 189, 248, 0.5) !important;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8), inset 0 1px 3px rgba(255, 255, 255, 0.55), inset 0 -2px 10px rgba(0, 210, 255, 0.25) !important;
+        }
+
+        /* Material Switcher Buttons */
+        .mat-toggle-btn {
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(15, 23, 42, 0.7);
+            color: #94a3b8;
+        }
+        .mat-toggle-btn.active {
+            background: linear-gradient(135deg, rgba(0, 210, 255, 0.2), rgba(37, 99, 235, 0.25));
+            border-color: rgba(0, 210, 255, 0.6);
+            color: #38bdf8;
+            box-shadow: 0 0 12px rgba(0, 210, 255, 0.25);
+        }
+
+        /* Surface Induced Charges (السطوح المستقطبة بالحث) */
+        .bound-charge-col {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            pointer-events: none;
+            z-index: 25;
+            font-family: 'Outfit', sans-serif;
+            font-size: 13px;
+            font-weight: 900;
+            line-height: 1;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .bound-charge-col.neg {
+            left: -12px;
+            color: #60a5fa;
+            filter: drop-shadow(0 0 4px #3b82f6);
+        }
+        .bound-charge-col.pos {
+            right: -12px;
+            color: #f87171;
+            filter: drop-shadow(0 0 4px #ef4444);
+        }
+
+        /* Subtle Polymer Micro-texture */
+        .pe-texture {
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+            background-size: 10px 10px;
+            pointer-events: none;
+            border-radius: 9px;
+        }
+    </style>
+</head>
+<body class="exp-layout-sidebar-v2">
+    <!-- Floating Landscape Hint for Mobile/Tablet Portrait -->
+    <div id="raqeem-landscape-hint" class="raqeem-landscape-hint">
+        <div class="hint-content">
+            <i class="fa-solid fa-mobile-screen-button rotate-icon"></i>
+            <span>يُفضّل تدوير الجهاز للوضع الأفقي لأفضل تجربة معملية</span>
+        </div>
+        <button class="hint-btn" id="raqeem-rotate-btn" title="تدوير / ملء الشاشة">
+            <i class="fa-solid fa-expand"></i> <span>تدوير / ملء الشاشة</span>
+        </button>
+    </div>
+
+    <!-- ═══ SIDEBAR ═══ -->
+    <aside class="exp-sidebar-v2" style="position: relative; z-index: 9999;">
+        <!-- Logo -->
+        <div class="exp-sidebar-v2-header">
+            <div style="display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="window.location.reload();">
+                <svg viewBox="0 0 100 100" style="width:32px; height:32px; flex-shrink:0;">
+                    <polygon points="50,5 90,25 90,65 50,95 10,65 10,25" fill="none" stroke="#7552FF" stroke-width="5" stroke-linejoin="round" />
+                    <polygon points="50,15 80,30 80,60 50,82 20,60 20,30" fill="rgba(9,6,23,0.95)" stroke="#ffb347" stroke-width="3" stroke-linejoin="round" />
+                    <path d="M40,36 H60 M40,49 H55 M40,62 H60 M40,36 V62" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <div>
+                    <div style="font-size:0.7rem; font-weight:900; color:#fff; font-family:'Outfit',sans-serif; letter-spacing:0.1em;">ELITE</div>
+                    <div style="font-size:0.55rem; color:rgba(117,82,255,0.8); letter-spacing:0.05em;">الفريق البرمجي</div>
+                </div>
+            </div>
+            <div class="exp-sidebar-v2-title">العازل غير القطبي</div>
+        </div>
+
+        <!-- Step Banner -->
+        <div class="exp-sidebar-v2-banner" id="stepBanner">
+            اسحب العازل للأعلى بين لوحي المتسعة وراقب كيف تصطف الدايبولات غير القطبية باتجاه المجال وتولد مجالاً معاكساً.
+        </div>
+
+        <div style="flex:1;"></div>
+
+        <div class="exp-sidebar-v2-section-title" style="margin-top: 15px;">لوحة التحكم</div>
+        <div style="display: flex; flex-direction: column; align-items: stretch; gap: 10px; padding: 0 10px 20px 10px;">
+            <!-- Real Non-Polar Material Selector HUD -->
+            <div style="background:rgba(0,0,0,0.2);border:1px solid rgba(117,82,255,0.15);border-radius:10px;padding:10px;">
+                <div style="font-size:0.65rem;font-weight:700;color:#a78bfa;margin-bottom:8px;display:flex;align-items:center;gap:4px;">
+                    <i class="fa-solid fa-layer-group"></i> نوع العازل:
+                </div>
+                <div class="flex flex-col gap-2">
+                    <button type="button" id="btn-pe" class="mat-toggle-btn active px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between cursor-pointer w-full">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-slate-100 shadow-[0_0_6px_rgba(255,255,255,0.9)]"></span>
+                            <span>بولي إثيلين</span>
+                        </div>
+                        <span class="px-1.5 py-0.5 rounded bg-white/10 text-[10px] font-mono text-cyan-300">κ=2.3</span>
+                    </button>
+                    <button type="button" id="btn-glass" class="mat-toggle-btn px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between cursor-pointer w-full">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_6px_rgba(0,210,255,0.9)]"></span>
+                            <span>زجاج</span>
+                        </div>
+                        <span class="px-1.5 py-0.5 rounded bg-white/10 text-[10px] font-mono text-cyan-300">κ=5.0</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dynamic State Indicators -->
+            <div style="background:rgba(0,0,0,0.2);border:1px solid rgba(117,82,255,0.15);border-radius:10px;padding:10px; font-size:0.75rem;">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-slate-400">الصيغة:</span>
+                    <span id="mat-formula" class="font-mono text-cyan-300 font-bold">(C₂H₄)ₙ</span>
+                </div>
+                <div class="w-full h-px bg-white/10 mb-2"></div>
+                <div class="flex flex-col gap-1">
+                    <span class="text-slate-400">الحالة:</span>
+                    <span id="mat-state" class="text-emerald-400 font-bold text-center">طبيعي (غير مستقطب)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Back to Menu -->
+        <a href="../index.html?showMenu=true" class="exp-back-btn-td" id="back-btn" style="justify-content:center; margin-top:4px;">
+            <i class="fa-solid fa-house" style="color:var(--cyan);"></i> <span>القائمة الرئيسية</span>
+        </a>
+    </aside>
+
+    <!-- ═══ MAIN CONTENT ═══ -->
+    <div class="exp-main-v2">
+        <!-- Topbar -->
+        <div class="exp-main-v2-topbar">
+            <h1 style="font-size:0.95rem; font-weight:900; color:#fff;">العازل غير القطبي (Nonpolar Dielectric)</h1>
+            <div class="flex items-center gap-2">
+                <a href="../index.html?showMenu=true" class="exp-btn-v2" style="text-decoration: none; display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-house"></i> الرئيسية
+                </a>
+            </div>
+        </div>
+
+        <!-- Workspace + Conclusion -->
+        <div class="exp-main-v2-workspace" style="display: flex; flex-direction: column; width: 100%; height: 100%; overflow: hidden;">
+            <div style="flex:1; position:relative; overflow: hidden; min-height:0; display: flex; width: 100%; height: 100%;">
+                
+                <!-- 2D Interactive Lab Desk -->
+                <div class="workspace-area" style="position: relative; width: 100%; height: 100%; min-height: 0; background-color: #f8f9fb; background-image: linear-gradient(rgba(117,82,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(117,82,255,0.08) 1px, transparent 1px); background-size: 30px 30px; border: 1px solid rgba(117,82,255,0.25); border-radius: 16px; box-shadow: inset 0 2px 20px rgba(117,82,255,0.05), 0 4px 24px rgba(0,0,0,0.3); overflow: hidden;" id="workspace">
+
+                    <!-- Perfectly Centered Scalable Apparatus Stage (450px wide x 340px high) -->
+                    <div id="apparatus-stage" style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); transform-origin: center center; width: 450px; height: 340px; direction: ltr;">
+                        
+                        <!-- External Electric Field Vectors SVG Layer -->
+                        <svg style="position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10;" id="extField">
+                            <defs>
+                                <marker id="arrowHeadExt" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                                    <polygon points="0 0, 8 4, 0 8" fill="rgba(0, 210, 255, 0.7)" />
+                                </marker>
+                            </defs>
+                            <line x1="120" y1="55" x2="330" y2="55" stroke="rgba(0, 210, 255, 0.65)" stroke-width="2" class="ext-line" marker-end="url(#arrowHeadExt)" />
+                            <line x1="120" y1="80" x2="330" y2="80" stroke="rgba(0, 210, 255, 0.65)" stroke-width="2" class="ext-line" marker-end="url(#arrowHeadExt)" />
+                            <line x1="120" y1="105" x2="330" y2="105" stroke="rgba(0, 210, 255, 0.65)" stroke-width="2" class="ext-line" marker-end="url(#arrowHeadExt)" />
+                            <line x1="120" y1="130" x2="330" y2="130" stroke="rgba(0, 210, 255, 0.65)" stroke-width="2" class="ext-line" marker-end="url(#arrowHeadExt)" />
+                            <line x1="120" y1="155" x2="330" y2="155" stroke="rgba(0, 210, 255, 0.65)" stroke-width="2" class="ext-line" marker-end="url(#arrowHeadExt)" />
+                        </svg>
+
+                        <!-- Centered Charged Capacitor (y: 45 to 165) -->
+                        <div id="capacitorObj" style="position: absolute; left: 100px; top: 45px; width: 250px; height: 120px; display: flex; justify-content: space-between; z-index: 20; pointer-events: none;">
+                            
+                            <!-- Positive Plate (Left) -->
+                            <div style="width: 18px; height: 120px; background: linear-gradient(90deg, #f1f5f9 0%, #94a3b8 40%, #475569 100%); border-radius: 6px; box-shadow: 0 5px 8px -1px rgba(0,0,0,0.6), inset 2px 0px 3px rgba(255,255,255,0.8); border-right: 2px solid #334155; position: relative; display: flex; flex-direction: column; justify-content: space-around; align-items: center; padding: 2px 0;">
+                                <span style="color: #ef4444; font-size: 16px; font-weight: 900; filter: drop-shadow(0 0 5px #ef4444); line-height: 1;">+</span>
+                                <span style="color: #ef4444; font-size: 16px; font-weight: 900; filter: drop-shadow(0 0 5px #ef4444); line-height: 1;">+</span>
+                                <span style="color: #ef4444; font-size: 16px; font-weight: 900; filter: drop-shadow(0 0 5px #ef4444); line-height: 1;">+</span>
+                                <span style="color: #ef4444; font-size: 16px; font-weight: 900; filter: drop-shadow(0 0 5px #ef4444); line-height: 1;">+</span>
+                                <span style="color: #ef4444; font-size: 16px; font-weight: 900; filter: drop-shadow(0 0 5px #ef4444); line-height: 1;">+</span>
+                            </div>
+
+                            <!-- Negative Plate (Right) -->
+                            <div style="width: 18px; height: 120px; background: linear-gradient(-90deg, #f1f5f9 0%, #94a3b8 40%, #475569 100%); border-radius: 6px; box-shadow: 0 5px 8px -1px rgba(0,0,0,0.6), inset -2px 0px 3px rgba(255,255,255,0.8); border-left: 2px solid #334155; position: relative; display: flex; flex-direction: column; justify-content: space-around; align-items: center; padding: 2px 0;">
+                                <span style="color: #3b82f6; font-size: 18px; font-weight: 900; filter: drop-shadow(0 0 5px #3b82f6); line-height: 1;">-</span>
+                                <span style="color: #3b82f6; font-size: 18px; font-weight: 900; filter: drop-shadow(0 0 5px #3b82f6); line-height: 1;">-</span>
+                                <span style="color: #3b82f6; font-size: 18px; font-weight: 900; filter: drop-shadow(0 0 5px #3b82f6); line-height: 1;">-</span>
+                                <span style="color: #3b82f6; font-size: 18px; font-weight: 900; filter: drop-shadow(0 0 5px #3b82f6); line-height: 1;">-</span>
+                                <span style="color: #3b82f6; font-size: 18px; font-weight: 900; filter: drop-shadow(0 0 5px #3b82f6); line-height: 1;">-</span>
+                            </div>
+                        </div>
+
+                        <!-- Realistic Non-Polar Dielectric Slab (Resting at y: 205, Draggable up to y: 45) -->
+                        <div id="dielectricObj" class="material-pe" style="position: absolute; left: 0px; top: 0px; transform: translate3d(155px, 205px, 0); width: 140px; height: 120px; border-radius: 10px; z-index: 30; cursor: grab;">
+                            
+                            <!-- Micro-texture layer -->
+                            <div id="matTexture" class="pe-texture"></div>
+
+                            <!-- Bound Surface Charges on Dielectric Faces -->
+                            <div class="bound-charge-col neg" id="boundNeg" title="شحنة سطحية سالبة محتثة (-σ_b)">
+                                <span>−</span><span>−</span><span>−</span><span>−</span>
+                            </div>
+                            <div class="bound-charge-col pos" id="boundPos" title="شحنة سطحية موجبة محتثة (+σ_b)">
+                                <span>+</span><span>+</span><span>+</span><span>+</span>
+                            </div>
+
+                            <!-- Internal Opposing Induced Electric Field Lines (E_d) -->
+                            <svg style="position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 20; opacity: 0; transition: opacity 0.2s;" id="intField">
+                                <defs>
+                                    <marker id="arrowHeadInt" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                                        <polygon points="0 0, 6 3, 0 6" fill="#ff6347" />
+                                    </marker>
+                                </defs>
+                                <line x1="115" y1="18" x2="25" y2="18" stroke="#ff6347" stroke-width="1.8" class="int-line" marker-end="url(#arrowHeadInt)" />
+                                <line x1="115" y1="42" x2="25" y2="42" stroke="#ff6347" stroke-width="1.8" class="int-line" marker-end="url(#arrowHeadInt)" />
+                                <line x1="115" y1="66" x2="25" y2="66" stroke="#ff6347" stroke-width="1.8" class="int-line" marker-end="url(#arrowHeadInt)" />
+                                <line x1="115" y1="90" x2="25" y2="90" stroke="#ff6347" stroke-width="1.8" class="int-line" marker-end="url(#arrowHeadInt)" />
+                            </svg>
+
+                            <!-- Container for Floating Dipole Molecules -->
+                            <div style="position: absolute; inset: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none;" id="dipolesContainer"></div>
+
+                            <!-- Material Identification Badge -->
+                            <div id="slabBadge" class="text-[9px] font-bold text-slate-200 bg-black/60 border border-white/10 px-2.5 py-0.5 rounded-full whitespace-nowrap pointer-events-none flex items-center gap-1.5 backdrop-blur-sm shadow-md" style="position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); z-index: 25;">
+                                <span id="badgeDot" class="w-1.5 h-1.5 rounded-full bg-slate-100 shadow-[0_0_5px_rgba(255,255,255,0.8)]"></span>
+                                <span id="badgeName">بولي إثيلين (PE)</span>
+                            </div>
+                        </div>
+
+                        <!-- Concept Information Banner -->
+                        <div id="concept-banner" style="position: absolute; top: 8px; left: 50%; transform: translateX(-50%); background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(0, 210, 255, 0.4); padding: 4px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; color: #22d3ee; box-shadow: 0 4px 20px rgba(0,0,0,0.7); opacity: 0; transition: opacity 0.3s ease; z-index: 40; pointer-events: none; white-space: nowrap; direction: rtl;">
+                            المجال المحصل يقل: (E_k = E - E_d) وتصطف الجزيئات باتجاه المجال المؤثر
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const dielectric = document.getElementById('dielectricObj');
+            const intField = document.getElementById('intField');
+            const conceptBanner = document.getElementById('concept-banner');
+            const dipolesContainer = document.getElementById('dipolesContainer');
+            const boundNeg = document.getElementById('boundNeg');
+            const boundPos = document.getElementById('boundPos');
+            const matTexture = document.getElementById('matTexture');
+            const slabBadge = document.getElementById('slabBadge');
+            const badgeName = document.getElementById('badgeName');
+            const badgeDot = document.getElementById('badgeDot');
+            const matFormula = document.getElementById('matFormula') || document.getElementById('mat-formula');
+            const matState = document.getElementById('matState') || document.getElementById('mat-state');
+            const btnPe = document.getElementById('btn-pe');
+            const btnGlass = document.getElementById('btn-glass');
+            const apparatusStage = document.getElementById('apparatus-stage');
+            const workspace = document.getElementById('workspace');
+            let currentStageScale = 1;
+
+            // ═════════════════════════════════════════════════════════
+            // RESPONSIVE CONTINUOUS AUTO-FIT (RESIZEOBSERVER)
+            // ═════════════════════════════════════════════════════════
+            function fitApparatusStage() {
+                if (!apparatusStage || !workspace) return;
+                const rect = workspace.getBoundingClientRect();
+                const padX = 24; // safety margin inside workspace
+                const padY = 24;
+                const availW = Math.max(60, rect.width - padX);
+                const availH = Math.max(60, rect.height - padY);
+
+                // Dynamically fit apparatus and resting dielectric slab strictly within available screen area
+                // Using 0.90 margin factor so it never touches the border or gets clipped
+                const fitScale = Math.min(availW / 450, availH / 340) * 0.90;
+                
+                // Allow it to scale down as small as needed for mobile, capped at 1.0 on large displays
+                currentStageScale = Math.min(1.0, Math.max(0.22, fitScale));
+                apparatusStage.style.transform = `translate(-50%, -50%) scale(${currentStageScale})`;
+            }
+
+            fitApparatusStage();
+            window.addEventListener('resize', fitApparatusStage);
+            if (window.ResizeObserver && workspace) {
+                const ro = new ResizeObserver(() => fitApparatusStage());
+                ro.observe(workspace);
+            }
+
+            // ═════════════════════════════════════════════════════════
+            // MATERIAL CONFIGURATION (TEXTBOOK EXAMPLES)
+            // ═════════════════════════════════════════════════════════
+            const MATERIALS = {
+                pe: {
+                    nameAr: 'بولي إثيلين (PE)',
+                    formula: '(C₂H₄)ₙ',
+                    kappa: 2.3,
+                    className: 'material-pe',
+                    dotColor: '#f1f5f9',
+                    textureClass: 'pe-texture'
+                },
+                glass: {
+                    nameAr: 'زجاج (Crown Glass)',
+                    formula: 'SiO₂',
+                    kappa: 5.0,
+                    className: 'material-glass',
+                    dotColor: '#38bdf8',
+                    textureClass: ''
+                }
+            };
+            let currentMat = 'pe';
+
+            function setMaterial(matKey) {
+                if (!MATERIALS[matKey]) return;
+                currentMat = matKey;
+                const mat = MATERIALS[matKey];
+
+                dielectric.className = mat.className;
+                badgeName.innerText = mat.nameAr;
+                badgeDot.style.backgroundColor = mat.dotColor;
+                matFormula.innerText = mat.formula;
+
+                if (mat.textureClass) {
+                    matTexture.className = mat.textureClass;
+                } else {
+                    matTexture.className = '';
+                }
+
+                if (btnPe && btnGlass) {
+                    btnPe.classList.toggle('active', matKey === 'pe');
+                    btnGlass.classList.toggle('active', matKey === 'glass');
+                }
+            }
+
+            if (btnPe) btnPe.addEventListener('click', () => setMaterial('pe'));
+            if (btnGlass) btnGlass.addEventListener('click', () => setMaterial('glass'));
+
+            // ═════════════════════════════════════════════════════════
+            // 1. POPULATE 6 COHERENT DIPOLE MOLECULES (2 COLS x 3 ROWS)
+            // ═════════════════════════════════════════════════════════
+            const dipoles = [];
+            const gridPositions = [
+                { x: 15, y: 15 },
+                { x: 75, y: 15 },
+                { x: 15, y: 50 },
+                { x: 75, y: 50 },
+                { x: 15, y: 85 },
+                { x: 75, y: 85 }
+            ];
+
+            gridPositions.forEach((pos, idx) => {
+                const mol = document.createElement('div');
+                mol.className = 'dipole-molecule';
+                mol.style.left = `${pos.x}px`;
+                mol.style.top = `${pos.y}px`;
+
+                const initialAngle = Math.random() * 360;
+                mol.style.transform = `rotate(${initialAngle}deg)`;
+
+                const negAtom = document.createElement('div');
+                negAtom.className = 'charge-atom neg';
+                negAtom.innerText = '-';
+
+                const bond = document.createElement('div');
+                bond.className = 'molecular-bond';
+
+                const posAtom = document.createElement('div');
+                posAtom.className = 'charge-atom pos';
+                posAtom.innerText = '+';
+
+                mol.appendChild(negAtom);
+                mol.appendChild(bond);
+                mol.appendChild(posAtom);
+
+                dipolesContainer.appendChild(mol);
+
+                dipoles.push({
+                    el: mol,
+                    negEl: negAtom,
+                    posEl: posAtom,
+                    bondEl: bond,
+                    angle: initialAngle,
+                    targetAngle: initialAngle,
+                    seed: idx * 1.7 + Math.random() * 3
+                });
+            });
+
+            // ═════════════════════════════════════════════════════════
+            // 2. HARDWARE-ACCELERATED POSITIONS & OVERLAP TRACKING
+            // ═════════════════════════════════════════════════════════
+            let slabX = 155;
+            let slabY = 205;
+            let currentOverlapRatio = 0;
+
+            // Thermal Agitation update timer
+            setInterval(() => {
+                dipoles.forEach((dip) => {
+                    if (currentOverlapRatio < 0.25) {
+                        // Calm random thermal drift outside field
+                        dip.targetAngle = dip.angle + (Math.random() * 50 - 25);
+                        dip.el.classList.remove('aligned');
+                    } else {
+                        // Electric torque: Align along external field
+                        const target = Math.round(dip.angle / 360) * 360;
+                        dip.targetAngle = target;
+                        dip.el.classList.add('aligned');
+                    }
+                });
+            }, 1800);
+
+            // ═════════════════════════════════════════════════════════
+            // 3. ZERO-REFLOW 60/120 FPS RENDER LOOP
+            // ═════════════════════════════════════════════════════════
+            function renderLoop() {
+                // Pure arithmetic bounds check (Zero DOM reads!)
+                // Centered Capacitor bounds inside apparatus stage: y from 45 to 165
+                const capLeft = 100, capRight = 350, capTop = 45, capBottom = 165;
+                const dRight = slabX + 140, dBottom = slabY + 120;
+
+                const xOverlap = Math.max(0, Math.min(capRight, dRight) - Math.max(capLeft, slabX));
+                const yOverlap = Math.max(0, Math.min(capBottom, dBottom) - Math.max(capTop, slabY));
+                const overlapRatio = Math.min(1.0, (xOverlap * yOverlap) / (140 * 120));
+                currentOverlapRatio = overlapRatio;
+
+                const t = performance.now() * 0.0018;
+                const freeFactor = Math.max(0, 1 - (overlapRatio * 3.0));
+
+                dipoles.forEach((dip) => {
+                    const lerpSpeed = overlapRatio > 0.2 ? 0.08 + (overlapRatio * 0.08) : 0.015;
+                    dip.angle += (dip.targetAngle - dip.angle) * lerpSpeed;
+                    dip.el.style.transform = `rotate(${dip.angle}deg)`;
+
+                    const negJiggleX = Math.sin(t * 1.8 + dip.seed) * 3.0 * freeFactor;
+                    const negJiggleY = Math.cos(t * 2.2 + dip.seed) * 2.0 * freeFactor;
+
+                    const posJiggleX = -Math.sin(t * 1.8 + dip.seed) * 1.0 * freeFactor;
+                    const posJiggleY = -Math.cos(t * 2.2 + dip.seed) * 0.8 * freeFactor;
+
+                    dip.negEl.style.transform = `translate(${negJiggleX}px, ${negJiggleY}px)`;
+                    dip.posEl.style.transform = `translate(${posJiggleX}px, ${posJiggleY}px)`;
+                });
+
+                // Update Opposing Internal Field & Bound Surface Charges
+                intField.style.opacity = overlapRatio;
+                const boundChargeOpacity = Math.min(1.0, overlapRatio * 1.3);
+                if (boundNeg) boundNeg.style.opacity = boundChargeOpacity;
+                if (boundPos) boundPos.style.opacity = boundChargeOpacity;
+
+                // Update State and HUD
+                if (matState) {
+                    if (overlapRatio > 0.25) {
+                        matState.innerText = 'استقطاب بالحث (مستقطب)';
+                        matState.className = 'text-cyan-400 font-bold';
+                    } else {
+                        matState.innerText = 'طبيعي (غير مستقطب)';
+                        matState.className = 'text-emerald-400 font-bold';
+                    }
+                }
+
+                if (conceptBanner) {
+                    if (overlapRatio > 0.2) {
+                        const k = MATERIALS[currentMat].kappa;
+                        conceptBanner.innerHTML = `المجال المحصل يقل: <b>E_k = E / ${k}</b> بفعل المجال المعاكس للمادة <b>(E_d)</b>`;
+                        conceptBanner.style.opacity = '1';
+                    } else {
+                        conceptBanner.style.opacity = '0';
+                    }
+                }
+
+                requestAnimationFrame(renderLoop);
+            }
+            requestAnimationFrame(renderLoop);
+
+            // ═════════════════════════════════════════════════════════
+            // 4. GPU-ACCELERATED DRAG WITH TRANSLATE3D (TOUCH & MOUSE)
+            // ═════════════════════════════════════════════════════════
+            let isDragging = false;
+            let startMouseX = 0, startMouseY = 0;
+            let startSlabX = 155, startSlabY = 205;
+
+            dielectric.addEventListener('mousedown', onDragStart);
+            dielectric.addEventListener('touchstart', onDragStart, { passive: false });
+
+            function onDragStart(e) {
+                isDragging = true;
+                const point = e.touches ? e.touches[0] : e;
+                startMouseX = point.clientX;
+                startMouseY = point.clientY;
+                startSlabX = slabX;
+                startSlabY = slabY;
+                dielectric.style.cursor = 'grabbing';
+            }
+
+            window.addEventListener('mousemove', onDragMove);
+            window.addEventListener('touchmove', onDragMove, { passive: false });
+
+            function onDragMove(e) {
+                if (!isDragging) return;
+                e.preventDefault(); // Prevents page scrolling ONLY while dragging the dielectric slab
+
+                const point = e.touches ? e.touches[0] : e;
+                const dx = (point.clientX - startMouseX) / currentStageScale;
+                const dy = (point.clientY - startMouseY) / currentStageScale;
+
+                // Clamped within apparatus stage (450px x 340px): y from 45 (inside capacitor) to 205 (resting outside)
+                slabX = Math.max(10, Math.min(300, startSlabX + dx));
+                slabY = Math.max(45, Math.min(205, startSlabY + dy));
+
+                // Direct GPU hardware-accelerated composition
+                dielectric.style.transform = `translate3d(${slabX}px, ${slabY}px, 0)`;
+            }
+
+            window.addEventListener('mouseup', onDragEnd);
+            window.addEventListener('touchend', onDragEnd);
+
+            function onDragEnd() {
+                if (!isDragging) return;
+                isDragging = false;
+                dielectric.style.cursor = 'grab';
+            }
+        });
+    </script>
+    <script src="../js/raqeem-navigation.js"></script>
+</body>
+</html>
+

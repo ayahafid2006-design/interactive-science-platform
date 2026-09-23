@@ -1,0 +1,1917 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مختبر الفيزياء | قياس المقدار المؤثر للتيار المتناوب (True RMS) بملقط التيار</title>
+
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="../fonts/google-fonts.css">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="../libs/fontawesome.min.css">
+
+    <!-- GSAP & Draggable -->
+    <script src="../libs/gsap.min.js"></script>
+    <script src="../libs/Draggable.min.js"></script>
+    <link rel="stylesheet" href="../libs/tailwind.css">
+    <link rel="stylesheet" href="../css/raqeem-drawer.css">
+    <script src="../engine/elite-engine.js"></script>
+
+    <script>
+        window.tailwind = window.tailwind || {};
+        window.tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            off: '#090617',
+                            on: '#120b2e',
+                            panel: '#251758',
+                            border: 'rgba(117, 82, 255, 0.25)',
+                            gold: '#facc15',
+                            orange: '#ff7e67',
+                            cyan: '#7552FF',
+                            green: '#2ecc71',
+                            purple: '#a855f7',
+                            red: '#ef4444',
+                            emerald: '#10b981'
+                        }
+                    },
+                    fontFamily: {
+                        ar: ['Tajawal', 'sans-serif'],
+                        en: ['Outfit', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #090617;
+            color: #e2e8f0;
+            font-family: 'Tajawal', sans-serif;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .workspace-area {
+            width: 100% !important;
+            height: 100% !important;
+            background-color: #f8f9fb !important;
+            background-image:
+                linear-gradient(rgba(117,82,255,0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(117,82,255,0.08) 1px, transparent 1px) !important;
+            background-size: 30px 30px !important;
+            border-radius: 12px;
+            position: relative;
+            border: 1px solid rgba(117, 82, 255, 0.25);
+            box-shadow: inset 0 2px 20px rgba(117, 82, 255, 0.05), 0 4px 24px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        /* Drop Zones */
+        .dropzone {
+            position: absolute;
+            border: 2px dashed rgba(117, 82, 255, 0.45) !important;
+            border-radius: 12px;
+            background: rgba(117, 82, 255, 0.05) !important;
+            transition: all 0.25s ease;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 15;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .dropzone .dropzone-label {
+            color: #a78bfa;
+            font-size: 0.70rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            opacity: 0.85;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .dropzone.highlight {
+            border-color: rgba(117, 82, 255, 0.95) !important;
+            background: rgba(117, 82, 255, 0.2) !important;
+            box-shadow: 0 0 20px rgba(117, 82, 255, 0.5) !important;
+        }
+
+        .dropzone.occupied {
+            opacity: 0 !important;
+            pointer-events: none;
+        }
+
+        /* Clamp Meter Dropzone */
+        #dz-clamp-meter {
+            border: 2px dashed rgba(16, 185, 129, 0.6) !important;
+            background: rgba(16, 185, 129, 0.06) !important;
+        }
+
+        #dz-clamp-meter .dropzone-label {
+            color: #10b981;
+        }
+
+        #dz-clamp-meter.highlight {
+            border-color: #10b981 !important;
+            background: rgba(16, 185, 129, 0.25) !important;
+            box-shadow: 0 0 22px rgba(16, 185, 129, 0.6) !important;
+        }
+
+        /* Action Buttons */
+        .exp-sidebar-actions {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 6px !important;
+            margin-bottom: 0 !important;
+            width: 100% !important;
+        }
+
+        .btn-reset {
+            padding: 0.45rem 0.4rem !important;
+            font-size: 0.72rem !important;
+            font-weight: 800 !important;
+            border-radius: 0.625rem !important;
+            justify-content: center !important;
+            white-space: nowrap !important;
+            gap: 0.35rem !important;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3) !important;
+            width: 100% !important;
+            background: linear-gradient(to right, rgba(239,68,68,0.15), rgba(239,68,68,0.25)) !important;
+            color: #fca5a5 !important;
+            border: 1px solid rgba(239, 68, 68, 0.3) !important;
+            cursor: pointer !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            font-family: 'Tajawal', sans-serif !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .btn-reset:hover {
+            background: linear-gradient(to right, rgba(239,68,68,0.25), rgba(239,68,68,0.4)) !important;
+            color: #fff !important;
+        }
+
+        .btn-reset:active { transform: scale(0.96) !important; }
+
+        .btn-formulas {
+            width: 100% !important;
+            padding: 0.45rem 0.4rem !important;
+            font-size: 0.72rem !important;
+            font-weight: 700 !important;
+            border-radius: 0.625rem !important;
+            background: rgba(117, 82, 255, 0.12) !important;
+            border: 1px solid rgba(117, 82, 255, 0.3) !important;
+            color: #c4b5fd !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 6px !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            font-family: 'Tajawal', sans-serif !important;
+        }
+
+        .btn-formulas:hover {
+            background: rgba(117, 82, 255, 0.25) !important;
+            border-color: rgba(117, 82, 255, 0.6) !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 12px rgba(117, 82, 255, 0.35) !important;
+        }
+
+        /* Interactive Circuit Wires */
+        .custom-wire {
+            fill: none;
+            stroke: #7552FF;
+            stroke-width: 5px;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            filter: drop-shadow(0 0 8px rgba(117, 82, 255, 0.75));
+            transition: filter 0.1s;
+        }
+
+        .ghost-wire {
+            fill: none;
+            stroke: #7552FF;
+            stroke-width: 4.5px;
+            stroke-dasharray: 6, 6;
+            stroke-linejoin: round;
+            filter: drop-shadow(0 0 8px rgba(117, 82, 255, 0.9));
+            pointer-events: none;
+        }
+
+        /* Wire Delete Button */
+        .wire-del-btn {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #ef4444;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 900;
+            color: #fff;
+            cursor: pointer;
+            z-index: 35;
+            transform: translate(-50%, -50%);
+            transition: background 0.15s, transform 0.15s;
+            pointer-events: all;
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.7);
+        }
+
+        .wire-del-btn:hover {
+            background: #b91c1c;
+            transform: translate(-50%, -50%) scale(1.2);
+        }
+
+        /* Terminal Nodes */
+        .terminal-node {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: rgba(117, 82, 255, 0.35);
+            border: 2px solid #7552FF;
+            transform: translate(-50%, -50%);
+            cursor: crosshair;
+            z-index: 30;
+            transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+            box-shadow: 0 0 6px rgba(117, 82, 255, 0.5);
+        }
+
+        .terminal-node:hover {
+            transform: translate(-50%, -50%) scale(1.35);
+            background: #7552FF;
+            box-shadow: 0 0 12px #7552FF;
+        }
+
+        .terminal-node.target-glow {
+            background: #10b981 !important;
+            border-color: #34d399 !important;
+            box-shadow: 0 0 14px #10b981 !important;
+            animation: pulse-terminal 1.2s infinite;
+        }
+
+        @keyframes pulse-terminal {
+            0%, 100% { transform: translate(-50%, -50%) scale(1.1); }
+            50% { transform: translate(-50%, -50%) scale(1.4); }
+        }
+
+        .terminal-node.connected {
+            background: #10b981;
+            border-color: #a7f3d0;
+        }
+
+        #inventory .terminal-node {
+            display: none !important;
+        }
+
+        /* Draggable Components */
+        .elite-component {
+            position: absolute;
+            cursor: grab;
+            z-index: 20;
+            touch-action: none;
+        }
+
+        .elite-component:active {
+            cursor: grabbing;
+        }
+
+        /* Toolbox Card */
+        .toolbox-card {
+            width: 100%;
+            background: rgba(37, 23, 88, 0.7);
+            border: 1px solid rgba(117, 82, 255, 0.25);
+            border-radius: 10px;
+            padding: 8px 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            transition: border-color 0.2s, transform 0.2s;
+            position: relative;
+        }
+
+        .toolbox-card:hover {
+            border-color: rgba(117, 82, 255, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .toolbox-card-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #c4b5fd;
+            text-align: center;
+        }
+
+        .component-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            text-align: center;
+            padding: 6px;
+            box-sizing: border-box;
+            line-height: 1.4;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Canvas Containers */
+        .canvas-container {
+            background: #090617;
+            border-radius: 10px;
+            border: 1px solid rgba(117, 82, 255, 0.25);
+            padding: 4px;
+            overflow: hidden;
+        }
+
+        /* Footer Console */
+        .footer-console {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 8px 20px;
+            background-color: #120b2e;
+            border-top: 1px solid rgba(117, 82, 255, 0.25);
+            flex-shrink: 0;
+            z-index: 40;
+            height: 70px;
+            box-sizing: border-box;
+        }
+
+        /* Formulas Overlay */
+        .formulas-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.78);
+            backdrop-filter: blur(8px);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .formulas-overlay.open {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .formulas-modal {
+            background: linear-gradient(135deg, #251758, #120b2e);
+            border: 1px solid rgba(117, 82, 255, 0.4);
+            border-radius: 20px;
+            padding: 24px;
+            width: 95%;
+            max-width: 600px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 40px rgba(117, 82, 255, 0.25);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .formula-box {
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-bottom: 10px;
+        }
+
+        .formula-eq {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        /* Portrait Blocker */
+        .portrait-blocker {
+            display: none !important;
+        }
+
+        @media screen and (orientation: portrait) {
+            .portrait-blocker {
+                display: flex !important;
+                position: fixed;
+                inset: 0;
+                z-index: 100000;
+                background: #090617;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                padding: 24px;
+                color: #e2e8f0;
+            }
+            .portrait-blocker i {
+                font-size: 3.2rem;
+                color: #7552FF;
+                margin-bottom: 18px;
+                animation: rotatePhoneAnim 2.5s ease-in-out infinite;
+            }
+            .portrait-blocker h2 {
+                font-size: 1.35rem;
+                font-weight: 800;
+                color: #ffffff;
+                margin-bottom: 10px;
+            }
+            .portrait-blocker p {
+                font-size: 0.95rem;
+                color: #94a3b8;
+                line-height: 1.6;
+                max-width: 320px;
+            }
+        }
+
+        @keyframes rotatePhoneAnim {
+            0%, 20% { transform: rotate(0deg); color: #7552FF; }
+            50%, 70% { transform: rotate(-90deg); color: #a855f7; }
+            90%, 100% { transform: rotate(0deg); color: #7552FF; }
+        }
+
+        /* Unified Cyber Scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(9, 6, 23, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(117, 82, 255, 0.4);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #7552FF;
+        }
+
+        /* Landscape Mobile & Tablet Fullscreen Fitting */
+        @media screen and (max-height: 540px) and (orientation: landscape) {
+            header.exp-header {
+                height: 40px !important;
+                padding: 4px 12px !important;
+            }
+            header.exp-header h1 {
+                font-size: 0.72rem !important;
+            }
+            .exp-main-container {
+                padding: 6px !important;
+                gap: 6px !important;
+            }
+            #toolbox {
+                width: 220px !important;
+            }
+            .toolbox-card {
+                width: 100% !important;
+                padding: 4px 3px !important;
+                gap: 2px !important;
+            }
+            .toolbox-card-title {
+                font-size: 0.62rem !important;
+            }
+            .component-wrapper {
+                padding: 2px !important;
+                transform: scale(0.80);
+                transform-origin: center center;
+            }
+            #toolbox .canvas-container {
+                height: 90px !important;
+            }
+            .footer-console {
+                height: 44px !important;
+                padding: 3px 10px !important;
+            }
+        }
+    </style>
+</head>
+
+<body class="w-screen h-screen flex flex-col overflow-hidden">
+    <!-- Portrait Blocker -->
+    <div class="portrait-blocker">
+        <i class="fa-solid fa-mobile-screen"></i>
+        <h2>يرجى تدوير الجهاز</h2>
+        <p>هذه التجربة مصممة لتعمل في الوضع الأفقي (Landscape)<br>للحصول على أفضل رؤية وتفاعل.</p>
+    </div>
+
+    <!-- Top Navigation Bar -->
+    <header class="exp-header flex items-center justify-between px-6 py-2 border-b border-cyber-border bg-cyber-panel flex-shrink-0" style="height: 54px;">
+        <div class="flex items-center gap-3">
+            <i class="fa-solid fa-bolt-lightning text-amber-400 text-lg"></i>
+            <h1 class="text-sm md:text-base font-black text-white">
+                الفصل الثالث — قياس المقدار المؤثر للتيار المتناوب (True RMS) بملقط التيار الحثي
+            </h1>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <span class="text-xs text-amber-300 font-bold bg-amber-950/40 border border-amber-500/30 px-3 py-1 rounded-full">
+                I<sub>rms</sub> = 0.707 · I<sub>max</sub>
+            </span>
+            <a href="../index.html" class="flex items-center gap-2 text-xs text-slate-400 hover:text-white transition-colors bg-slate-800/60 px-3 py-1.5 rounded-lg border border-slate-700">
+                <span>العودة للرئيسية</span>
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Layout (In RTL: 1st Child is RIGHT, 2nd is CENTER/LEFT) -->
+    <div class="exp-main-container flex flex-1 gap-3 p-3 overflow-hidden min-h-0">
+
+        <!-- 1. RIGHT PANEL: Unified Sidebar (Controls, Readings, Waveform & Inventory) -->
+        <aside class="bg-cyber-panel border border-cyber-border rounded-xl flex flex-col shadow-2xl overflow-hidden" id="toolbox" style="width: 270px; flex-shrink: 0; z-index: 50; background: #120b2e; border: 1px solid rgba(117, 82, 255, 0.25);">
+            <!-- Sidebar Header -->
+            <div class="border-b px-3.5 py-2 text-xs font-bold flex items-center justify-between flex-shrink-0" style="background: rgba(117, 82, 255, 0.12); border-color: rgba(117, 82, 255, 0.25); color: #c4b5fd;">
+                <span class="flex items-center gap-2">
+                    <i class="fa-solid fa-toolbox text-purple-400"></i>
+                    <span>لوحة التحكم والقياس</span>
+                </span>
+                <span id="clamp-indicator-pill" class="text-[10px] px-2 py-0.5 rounded font-mono font-bold bg-emerald-950/60 border border-emerald-500/40 text-emerald-400">RMS MODE</span>
+            </div>
+
+            <!-- Top Action Buttons -->
+            <div class="p-2 border-b border-purple-500/20 flex flex-col gap-1.5 flex-shrink-0" style="background: rgba(18, 11, 46, 0.6);">
+                <div class="exp-sidebar-actions">
+                    <button class="btn-reset" id="reset-btn">
+                        <i class="fa-solid fa-rotate-right"></i> <span>إعادة ضبط</span>
+                    </button>
+                    <button id="formulas-btn" class="btn-formulas">
+                        <i class="fa-solid fa-scale-balanced text-[11px]"></i> <span>القوانين</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Scrollable Content -->
+            <div id="inventory" class="overflow-y-auto flex-1 flex flex-col gap-3 p-3">
+                
+                <!-- Live Waveform & Readouts Card -->
+                <div class="flex flex-col gap-2 p-2.5 rounded-lg border border-purple-500/20" style="background: rgba(9, 6, 23, 0.5);">
+                    <div class="canvas-container" style="height: 110px; position: relative; width: 100%;">
+                        <canvas id="rms-graph" style="width: 100%; height: 100%;"></canvas>
+                        <div style="position:absolute; bottom:2px; right:8px; font-size:9px; color:#94a3b8; font-family:'Outfit',sans-serif; font-weight:bold;">الزمن t</div>
+                        <div style="position:absolute; top:2px; left:6px; font-size:9px; color:#94a3b8; font-family:'Outfit',sans-serif; font-weight:bold;">التيار I</div>
+                    </div>
+
+                    <!-- Values Grid -->
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <div style="background:rgba(168, 85, 247, 0.08); border:1px solid rgba(168, 85, 247, 0.3); border-radius:6px; padding:4px 6px; text-align:center;">
+                            <p style="font-size:0.62rem; color:#c084fc; font-weight:bold;">الذروة (I<sub>max</sub>)</p>
+                            <p style="font-family:'Outfit',sans-serif; font-size:0.95rem; font-weight:900; color:#e9d5ff;" dir="ltr">
+                                <span id="imax-val-text">5.00</span> A
+                            </p>
+                        </div>
+                        <div style="background:rgba(16, 185, 129, 0.08); border:1px solid rgba(16, 185, 129, 0.3); border-radius:6px; padding:4px 6px; text-align:center;">
+                            <p style="font-size:0.62rem; color:#34d399; font-weight:bold;">المؤثر (I<sub>rms</sub>)</p>
+                            <p style="font-family:'Outfit',sans-serif; font-size:0.95rem; font-weight:900; color:#a7f3d0;" dir="ltr">
+                                <span id="irms-val-text">3.54</span> A
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Average Power -->
+                    <div style="background:rgba(245, 158, 11, 0.08); border:1px solid rgba(245, 158, 11, 0.3); border-radius:6px; padding:4px 6px; text-align:center;">
+                        <div class="flex items-center justify-between">
+                            <span style="font-size:0.65rem; color:#fbbf24; font-weight:bold;">القدرة الحرارية المستهلكة</span>
+                            <span style="font-size:0.60rem; color:#fcd34d;" dir="ltr">P = I²<sub>rms</sub>·R</span>
+                        </div>
+                        <p style="font-family:'Outfit',sans-serif; font-size:1.05rem; font-weight:900; color:#fde68a;" dir="ltr">
+                            <span id="power-val-text">125.0</span> W
+                        </p>
+                    </div>
+
+                    <!-- Clamp Meter Sensor Interactive Control Box -->
+                    <div id="clamp-status-badge" class="flex flex-col gap-1.5 p-2 rounded bg-slate-900/80 border border-slate-700">
+                        <div class="flex items-center justify-between text-[10px]">
+                            <span class="text-slate-400">حالة الملقط:</span>
+                            <span id="clamp-status-text" class="font-bold text-amber-400">بانتظار التعليق على السلك</span>
+                        </div>
+                        <button id="sidebar-toggle-btn" class="w-full py-1 px-2 rounded text-[11px] font-bold bg-blue-600/30 hover:bg-blue-600/50 border border-blue-500/40 text-blue-300 flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
+                            <i class="fa-solid fa-arrows-rotate text-[10px]"></i>
+                            <span id="sidebar-toggle-label">تبديل الملقط: [ RMS المؤثر ⇄ PEAK الأعظم ]</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Circuit Elements Section Title -->
+                <div class="text-[11px] font-bold text-purple-300 flex items-center gap-1.5 pt-1">
+                    <i class="fa-solid fa-shapes text-purple-400 text-[10px]"></i>
+                    <span>عناصر الدائرة (اسحب وركّب):</span>
+                </div>
+                
+                <!-- 1. AC Source Component (Realistic Lab Benchtop Power Supply Unit, 120px x 140px) -->
+                <div class="toolbox-card" id="card-ac-source">
+                    <span class="toolbox-card-title">مجهز قدرة متناوبة (AC Power Supply)</span>
+                    <div class="component-wrapper" id="wrapper-ac-source" style="height: 120px; display: flex;">
+                        <div class="elite-component ac-source overflow-visible" id="ac-source" data-target="dz-ac-source" style="position:relative; width:120px; height:140px;">
+                            <svg viewBox="0 0 120 140" class="w-full h-full overflow-visible" style="direction: ltr !important; text-anchor: start;">
+                                <defs>
+                                    <linearGradient id="chassisGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#1e293b" />
+                                        <stop offset="35%" stop-color="#0f172a" />
+                                        <stop offset="85%" stop-color="#090d16" />
+                                        <stop offset="100%" stop-color="#020617" />
+                                    </linearGradient>
+                                    <linearGradient id="metalBezelGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" stop-color="#64748b" />
+                                        <stop offset="50%" stop-color="#334155" />
+                                        <stop offset="100%" stop-color="#1e293b" />
+                                    </linearGradient>
+                                    <linearGradient id="screenGlassGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#021a24" />
+                                        <stop offset="100%" stop-color="#042f2e" />
+                                    </linearGradient>
+                                    <linearGradient id="dialGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#475569" />
+                                        <stop offset="50%" stop-color="#1e293b" />
+                                        <stop offset="100%" stop-color="#0f172a" />
+                                    </linearGradient>
+                                    <linearGradient id="bananaRedGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" stop-color="#ef4444" />
+                                        <stop offset="50%" stop-color="#dc2626" />
+                                        <stop offset="100%" stop-color="#991b1b" />
+                                    </linearGradient>
+                                    <linearGradient id="bananaBlueGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" stop-color="#38bdf8" />
+                                        <stop offset="50%" stop-color="#2563eb" />
+                                        <stop offset="100%" stop-color="#1e40af" />
+                                    </linearGradient>
+                                </defs>
+
+                                <!-- Top Carry Handle -->
+                                <path d="M 40 8 L 40 3 Q 40 2 42 2 L 68 2 Q 70 2 70 3 L 70 8" fill="none" stroke="#64748b" stroke-width="3.5" stroke-linecap="round" />
+                                <rect x="38" y="6" width="5" height="3" rx="1" fill="#94a3b8" />
+                                <rect x="67" y="6" width="5" height="3" rx="1" fill="#94a3b8" />
+
+                                <!-- Bottom Rubber Support Feet -->
+                                <rect x="16" y="132" width="18" height="4" rx="1.5" fill="#020617" stroke="#334155" stroke-width="0.5" />
+                                <rect x="76" y="132" width="18" height="4" rx="1.5" fill="#020617" stroke="#334155" stroke-width="0.5" />
+
+                                <!-- Main Instrument Chassis Body (Real 120px wide lab bench unit) -->
+                                <rect x="4" y="8" width="98" height="124" rx="8" fill="url(#chassisGrad)" stroke="url(#metalBezelGrad)" stroke-width="1.8" />
+                                <rect x="7" y="11" width="92" height="118" rx="6" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1" />
+
+                                <!-- Corner Hex Screws -->
+                                <circle cx="10" cy="14" r="1.5" fill="#475569" stroke="#1e293b" stroke-width="0.5" />
+                                <circle cx="96" cy="14" r="1.5" fill="#475569" stroke="#1e293b" stroke-width="0.5" />
+                                <circle cx="10" cy="126" r="1.5" fill="#475569" stroke="#1e293b" stroke-width="0.5" />
+                                <circle cx="96" cy="126" r="1.5" fill="#475569" stroke="#1e293b" stroke-width="0.5" />
+
+                                <!-- 1. DIGITAL LCD DISPLAY (Explicit LTR, clean margins) -->
+                                <rect x="11" y="16" width="84" height="34" rx="4" fill="url(#screenGlassGrad)" stroke="#0e7490" stroke-width="1" />
+                                <text x="16" y="29" fill="#38bdf8" font-size="8" font-weight="900" font-family="Outfit" style="direction:ltr !important; text-anchor:start;">AC 220.0 V</text>
+                                <text x="16" y="42" fill="#22d3ee" font-size="6.5" font-weight="bold" font-family="Outfit" style="direction:ltr !important; text-anchor:start;">FREQ 50.0 Hz</text>
+                                <!-- Oscilloscope Sine Wave Graphic in Screen -->
+                                <path d="M 62 29 Q 68 20, 74 29 T 86 29" fill="none" stroke="#22d3ee" stroke-width="1.8" stroke-linecap="round" filter="drop-shadow(0 0 3px #22d3ee)" />
+                                <text x="74" y="42" fill="#0891b2" font-size="5" font-family="Outfit" font-weight="bold" text-anchor="middle" style="direction:ltr !important;">SINE WAVE</text>
+
+                                <!-- 2. SILKSCREEN EMBEDDED AC SYMBOL BADGE (Printed on the device frontplate) -->
+                                <rect x="11" y="54" width="84" height="26" rx="4" fill="rgba(117, 82, 255, 0.12)" stroke="rgba(117, 82, 255, 0.35)" stroke-width="1" />
+                                <!-- Authentic Sine Symbol '~' on the badge -->
+                                <circle cx="24" cy="67" r="8.5" fill="#120b2e" stroke="#8b5cf6" stroke-width="1.2" />
+                                <path d="M 19 67 Q 21.5 62, 24 67 T 29 67" fill="none" stroke="#c084fc" stroke-width="2.2" stroke-linecap="round" />
+                                <!-- Device Specification Labels (Explicit LTR start at x=37) -->
+                                <text x="37" y="64" fill="#f8fafc" font-size="6.5" font-weight="900" font-family="Outfit" style="direction:ltr !important; text-anchor:start;">AC POWER SUPPLY</text>
+                                <text x="37" y="73" fill="#a78bfa" font-size="5" font-weight="bold" font-family="Tajawal" style="direction:ltr !important; text-anchor:start;">مجهز تيار متناوب</text>
+
+                                <!-- 3. ANALOG ROTARY VOLTAGE DIAL -->
+                                <g transform="translate(28, 105)">
+                                    <!-- Tick Marks -->
+                                    <circle cx="0" cy="0" r="14" fill="none" stroke="#475569" stroke-width="1.2" stroke-dasharray="2 3.5" />
+                                    <!-- Dial Body -->
+                                    <circle cx="0" cy="0" r="11" fill="url(#dialGrad)" stroke="#64748b" stroke-width="1" />
+                                    <circle cx="0" cy="0" r="8" fill="#0f172a" />
+                                    <!-- Pointer Notch -->
+                                    <line x1="0" y1="-2" x2="6" y2="-7" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round" />
+                                    <text x="0" y="19" fill="#94a3b8" font-size="4.5" font-weight="bold" font-family="Outfit" text-anchor="middle" style="direction:ltr !important;">VOLTAGE</text>
+                                </g>
+
+                                <!-- 4. FREQUENCY SELECTOR KNOB -->
+                                <g transform="translate(54, 105)">
+                                    <circle cx="0" cy="0" r="8" fill="url(#dialGrad)" stroke="#475569" stroke-width="0.8" />
+                                    <line x1="0" y1="-2" x2="0" y2="-6" stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round" />
+                                    <text x="0" y="19" fill="#64748b" font-size="4" font-weight="bold" font-family="Outfit" text-anchor="middle" style="direction:ltr !important;">RANGE</text>
+                                </g>
+
+                                <!-- 5. PILOT LED & POWER SWITCH -->
+                                <g transform="translate(78, 102)">
+                                    <!-- Power Pilot Lamp -->
+                                    <circle cx="0" cy="-6" r="3" fill="#10b981" filter="drop-shadow(0 0 3px #10b981)" stroke="#047857" stroke-width="0.8" />
+                                    <text x="0" y="2" fill="#64748b" font-size="4" font-weight="bold" font-family="Outfit" text-anchor="middle" style="direction:ltr !important;">POWER</text>
+                                    <!-- Rocker Switch -->
+                                    <rect x="-6" y="5" width="12" height="7" rx="1.5" fill="#090d16" stroke="#475569" stroke-width="0.8" />
+                                    <rect x="-4" y="6" width="8" height="5" rx="1" fill="#ef4444" />
+                                </g>
+
+                                <!-- 6. CLEAN BANANA BINDING POSTS (MOUNTED ON RIGHT EDGE, ZERO PURPLE STUBS) -->
+                                <!-- Top Binding Post (Live Phase at y = 15) -->
+                                <rect x="94" y="8" width="18" height="14" rx="3" fill="url(#bananaRedGrad)" stroke="#7f1d1d" stroke-width="0.8" />
+                                <circle cx="103" cy="15" r="4" fill="#1e1e24" stroke="#fca5a5" stroke-width="0.8" />
+                                <circle cx="103" cy="15" r="1.8" fill="#000000" />
+
+                                <!-- Bottom Binding Post (Neutral at y = 125) -->
+                                <rect x="94" y="118" width="18" height="14" rx="3" fill="url(#bananaBlueGrad)" stroke="#1e3a8a" stroke-width="0.8" />
+                                <circle cx="103" cy="125" r="4" fill="#1e1e24" stroke="#93c5fd" stroke-width="0.8" />
+                                <circle cx="103" cy="125" r="1.8" fill="#000000" />
+                            </svg>
+                            <!-- Upper and Lower Terminals (Centered right over banana sockets) -->
+                            <div class="terminal-node" id="ac-term-top" style="left: 103px; top: 15px;" title="القطب العلوي لمجهز AC"></div>
+                            <div class="terminal-node" id="ac-term-bottom" style="left: 103px; top: 125px;" title="القطب السفلي لمجهز AC"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Load Lamp Component (Height 140px, terminals at y = 15px and 125px) -->
+                <div class="toolbox-card" id="card-load-lamp">
+                    <span class="toolbox-card-title">مصباح الحمل (توهج حراري)</span>
+                    <div class="component-wrapper" id="wrapper-load-lamp" style="height: 120px; display: flex;">
+                        <div class="elite-component load-lamp overflow-visible" id="load-lamp" data-target="dz-load-lamp" style="position:relative; width:85px; height:140px;">
+                            <svg viewBox="0 0 100 140" class="w-full h-full overflow-visible" id="bulb-svg-element" style="transition: filter 0.2s ease;">
+                                <defs>
+                                    <linearGradient id="metalThreadGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#334155" />
+                                        <stop offset="25%" stop-color="#94a3b8" />
+                                        <stop offset="50%" stop-color="#f8fafc" />
+                                        <stop offset="75%" stop-color="#94a3b8" />
+                                        <stop offset="100%" stop-color="#1e293b" />
+                                    </linearGradient>
+                                    <radialGradient id="bulbGasGrad" cx="50%" cy="42%" r="50%">
+                                        <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
+                                        <stop offset="35%" stop-color="#fef08a" stop-opacity="0.9" />
+                                        <stop offset="70%" stop-color="#f59e0b" stop-opacity="0.55" />
+                                        <stop offset="100%" stop-color="#ea580c" stop-opacity="0" />
+                                    </radialGradient>
+                                    <radialGradient id="bulbAuraGrad" cx="50%" cy="40%" r="50%">
+                                        <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.65" />
+                                        <stop offset="50%" stop-color="#f59e0b" stop-opacity="0.25" />
+                                        <stop offset="100%" stop-color="#f59e0b" stop-opacity="0" />
+                                    </radialGradient>
+                                    <linearGradient id="glassReflectionGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.25" />
+                                        <stop offset="40%" stop-color="#ffffff" stop-opacity="0.05" />
+                                        <stop offset="80%" stop-color="#38bdf8" stop-opacity="0.08" />
+                                        <stop offset="100%" stop-color="#0f172a" stop-opacity="0.35" />
+                                    </linearGradient>
+                                </defs>
+
+                                <!-- Top and Bottom Lead Lines connecting socket to terminals -->
+                                <line x1="50" y1="36" x2="50" y2="15" stroke="#7552FF" stroke-width="3.5" stroke-linecap="round"/>
+                                <line x1="50" y1="15" x2="0" y2="15" stroke="#7552FF" stroke-width="3.5" stroke-linecap="round"/>
+
+                                <line x1="50" y1="104" x2="50" y2="125" stroke="#7552FF" stroke-width="3.5" stroke-linecap="round"/>
+                                <line x1="50" y1="125" x2="0" y2="125" stroke="#7552FF" stroke-width="3.5" stroke-linecap="round"/>
+
+                                <!-- Centered Bulb assembly shifted to center Y = 70 -->
+                                <g transform="translate(0, 30)">
+                                    <circle id="bulb-aura" cx="50" cy="40" r="50" fill="url(#bulbAuraGrad)" opacity="0" style="transition: opacity 0.25s ease;" />
+                                    <g id="bulb-rays" opacity="0" style="transition: opacity 0.25s ease;">
+                                        <line x1="50" y1="2" x2="50" y2="-9" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round" />
+                                        <line x1="78" y1="12" x2="87" y2="3" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round" />
+                                        <line x1="90" y1="40" x2="101" y2="40" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round" />
+                                        <line x1="78" y1="68" x2="87" y2="77" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round" />
+                                        <line x1="22" y1="68" x2="13" y2="77" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round" />
+                                        <line x1="10" y1="40" x2="-1" y2="40" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round" />
+                                        <line x1="22" y1="12" x2="13" y2="3" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round" />
+                                    </g>
+
+                                    <rect x="41" y="74" width="18" height="4.5" rx="2" fill="url(#metalThreadGrad)" stroke="#1e293b" stroke-width="0.5" />
+                                    <rect x="42" y="78" width="16" height="4.5" rx="2" fill="url(#metalThreadGrad)" stroke="#1e293b" stroke-width="0.5" />
+                                    <rect x="43" y="82" width="14" height="4.5" rx="2" fill="url(#metalThreadGrad)" stroke="#1e293b" stroke-width="0.5" />
+                                    <path d="M 44,86.5 L 56,86.5 L 53,91 L 47,91 Z" fill="#0f172a" />
+                                    <circle cx="50" cy="91.5" r="2.5" fill="#94a3b8" stroke="#334155" stroke-width="0.5" />
+
+                                    <path id="bulb-glass-bg" d="M 50,10 C 26,10 22,34 32,54 C 37,63 41,69 41,74 L 59,74 C 59,69 63,63 68,54 C 78,34 74,10 50,10 Z" fill="#0b111e" opacity="0.85" />
+                                    <path id="bulb-gas-fill" d="M 50,10 C 26,10 22,34 32,54 C 37,63 41,69 41,74 L 59,74 C 59,69 63,63 68,54 C 78,34 74,10 50,10 Z" fill="url(#bulbGasGrad)" opacity="0" style="transition: opacity 0.25s ease;" />
+
+                                    <path d="M 46,74 L 47,56 L 53,56 L 54,74 Z" fill="rgba(148, 163, 184, 0.25)" stroke="rgba(203, 213, 225, 0.35)" stroke-width="0.75" />
+                                    <path d="M 48,56 L 43,36" stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round" />
+                                    <path d="M 52,56 L 57,36" stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round" />
+
+                                    <path id="bulb-filament" d="M 43,36 Q 45,30 47.5,33 Q 50,26 52.5,33 Q 55,30 57,36" fill="none" stroke="#64748b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="transition: stroke 0.2s, stroke-width 0.2s, filter 0.2s;" />
+
+                                    <path d="M 50,10 C 26,10 22,34 32,54 C 37,63 41,69 41,74 L 59,74 C 59,69 63,63 68,54 C 78,34 74,10 50,10 Z" fill="url(#glassReflectionGrad)" stroke="#94a3b8" stroke-width="1.5" />
+                                    <path d="M 31,24 C 28,34 32,46 36,52" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" opacity="0.4" />
+                                </g>
+                            </svg>
+                            <!-- Upper and Lower Terminals (Exact matching horizontal line alignment) -->
+                            <div class="terminal-node" id="lamp-term-top" style="left: 0%; top: 15px;" title="القطب العلوي للمصباح"></div>
+                            <div class="terminal-node" id="lamp-term-bottom" style="left: 0%; top: 125px;" title="القطب السفلي للمصباح"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. True-RMS Clamp Meter Component (Aperture at Y = 20px) -->
+                <div class="toolbox-card" id="card-clamp-meter">
+                    <span class="toolbox-card-title">ملقط التيار الحثي (Clamp Meter)</span>
+                    <div class="component-wrapper" id="wrapper-clamp-meter" style="height: 125px; display: flex;">
+                        <div class="elite-component clamp-meter overflow-visible" id="clamp-meter" data-target="dz-clamp-meter" style="position:relative; width:85px; height:125px;">
+                            <svg viewBox="0 0 85 125" class="w-full h-full overflow-visible" id="clamp-svg">
+                                <defs>
+                                    <linearGradient id="clampJawGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#f59e0b" />
+                                        <stop offset="50%" stop-color="#d97706" />
+                                        <stop offset="100%" stop-color="#b45309" />
+                                    </linearGradient>
+                                    <linearGradient id="clampBodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#1e293b" />
+                                        <stop offset="40%" stop-color="#0f172a" />
+                                        <stop offset="100%" stop-color="#020617" />
+                                    </linearGradient>
+                                </defs>
+
+                                <!-- Magnetic Jaws Loop (Aperture Center at Y = 20px where conductor cleanly enters) -->
+                                <path d="M 22 38 C 14 32, 12 18, 20 8 C 30 -3, 55 -3, 65 8 C 73 18, 71 32, 63 38 Z" fill="none" stroke="url(#clampJawGrad)" stroke-width="7.5" stroke-linecap="round" />
+                                
+                                <!-- Jaw Inner Circular Aperture (Wire conductor passes right through Y = 20) -->
+                                <circle cx="42.5" cy="20" r="11" fill="rgba(16,185,129,0.12)" stroke="rgba(16,185,129,0.4)" stroke-dasharray="2 2" />
+
+                                <!-- Main Body Chassis Hanging Below the Wire -->
+                                <rect x="18" y="38" width="49" height="82" rx="8" fill="url(#clampBodyGrad)" stroke="#334155" stroke-width="1.5" />
+                                <rect x="22" y="40" width="41" height="4" rx="2" fill="#d97706" />
+
+                                <!-- Digital LCD Display Screen -->
+                                <rect x="23" y="48" width="39" height="26" rx="4" fill="#022c22" stroke="#10b981" stroke-width="1.2" />
+                                <text id="clamp-lcd-badge" x="26" y="56" fill="#6ee7b7" font-size="5.5" font-family="Outfit" font-weight="bold">TRUE RMS</text>
+                                <text id="clamp-lcd-text" x="42.5" y="68" fill="#34d399" font-size="11" font-weight="900" font-family="Outfit" text-anchor="middle">--- A</text>
+
+                                <!-- RMS / PEAK Toggle Button -->
+                                <g id="clamp-device-toggle" class="cursor-pointer" style="cursor:pointer;">
+                                    <rect x="22" y="80" width="41" height="16" rx="4" fill="#2563eb" stroke="#60a5fa" stroke-width="1" />
+                                    <text id="clamp-device-btn-text" x="42.5" y="91" fill="#ffffff" font-size="6.5" font-weight="bold" font-family="Outfit" text-anchor="middle">RMS ⇄ PEAK</text>
+                                </g>
+
+                                <!-- Rotary Dial Accent -->
+                                <circle cx="42.5" cy="107" r="7" fill="#0f172a" stroke="#475569" stroke-width="1" />
+                                <line x1="42.5" y1="102" x2="42.5" y2="107" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </aside>
+
+        <!-- 2. CENTER & LEFT: Main Concept Workspace (Expanded Full Width) -->
+        <main class="flex-1 workspace-area flex flex-col relative" id="workspace">
+            <!-- Canvas for Real AC Flow and Electron Oscillation -->
+            <canvas id="workspace-canvas" style="position:absolute; inset:0; width:100%; height:100%; z-index:10;"></canvas>
+
+            <!-- Drop Zones Container -->
+            <div id="dropzones-container" style="position:absolute; inset:0; pointer-events:none; z-index:15;"></div>
+
+            <!-- SVG Layer for Interactive Manual AC Wiring -->
+            <svg id="wires-svg" style="position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:25;">
+                <path id="ghost-wire" class="ghost-wire" d="" visibility="hidden"></path>
+            </svg>
+
+            <!-- Bottom Concept Caption Banner -->
+            <div style="position:absolute; bottom:16px; left:0; width:100%; text-align:center; z-index:25; pointer-events:none;">
+                <div class="inline-block bg-black/60 border border-emerald-500/40 px-6 py-2 rounded-full shadow-[0_0_20px_rgba(16,185,129,0.25)] backdrop-blur-md">
+                    <span class="text-xs md:text-sm font-black text-emerald-300 tracking-wide" dir="rtl">
+                        يقيس ملقط التيار (Clamp Meter) التأثير المغناطيسي المتولد من الخارج ويعرض المقدار المؤثر: I<sub>rms</sub> = 0.707 · I<sub>max</sub>
+                    </span>
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+    <!-- Bottom Footer Console -->
+    <footer class="footer-console">
+        <!-- Status Text -->
+        <div class="flex items-center gap-2 max-w-sm truncate">
+            <i class="fa-solid fa-circle-info text-amber-400 text-sm"></i>
+            <span id="status-text" class="text-xs font-bold text-cyber-orange truncate">
+                يرجى سحب المصدر والمصباح وتوصيل السلكين، ثم تعليق ملقط التيار
+            </span>
+        </div>
+
+        <!-- Sliders (Center) -->
+        <div class="flex items-center gap-5">
+            <!-- Peak Current Slider -->
+            <div class="flex items-center gap-2 bg-slate-900/80 px-3 py-1.5 rounded-lg border border-purple-500/30 shadow-inner">
+                <label class="text-xs font-bold text-purple-400">التيار الأعظم I<sub>max</sub></label>
+                <input type="range" id="imax-slider" min="1" max="10" value="5" step="0.5" class="w-28 accent-purple-400 cursor-pointer">
+                <span id="imax-val" class="text-xs text-white font-bold w-12 text-left font-mono" dir="ltr">5.0 A</span>
+            </div>
+
+            <!-- Resistance Slider -->
+            <div class="flex items-center gap-2 bg-slate-900/80 px-3 py-1.5 rounded-lg border border-amber-500/30 shadow-inner">
+                <label class="text-xs font-bold text-amber-400">المقاومة R</label>
+                <input type="range" id="res-slider" min="5" max="50" value="10" step="1" class="w-28 accent-amber-400 cursor-pointer">
+                <span id="res-val" class="text-xs text-white font-bold w-12 text-left font-mono" dir="ltr">10 Ω</span>
+            </div>
+
+            <!-- Frequency Slider -->
+            <div class="flex items-center gap-2 bg-slate-900/80 px-3 py-1.5 rounded-lg border border-cyan-500/30 shadow-inner">
+                <label class="text-xs font-bold text-cyan-400">التردد f</label>
+                <input type="range" id="freq-slider" min="20" max="60" value="50" step="5" class="w-24 accent-cyan-400 cursor-pointer">
+                <span id="freq-val" class="text-xs text-white font-bold w-12 text-left font-mono" dir="ltr">50 Hz</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Formulas & Theory Modal -->
+    <div class="formulas-overlay" id="formulas-overlay">
+        <div class="formulas-modal">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <h2 style="font-size:1.05rem; font-weight:900; color:#38bdf8; display:flex; align-items:center; gap:8px;">
+                    <i class="fa-solid fa-bolt-lightning text-amber-400"></i>
+                    المفهوم الفيزيائي: المقدار المؤثر للتيار المتناوب (True RMS)
+                </h2>
+                <button id="close-modal-btn" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:4px 8px; color:#94a3b8; cursor:pointer;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Theory Cards -->
+            <div class="formula-box" style="background:rgba(168, 85, 247, 0.08); border:1px solid rgba(168, 85, 247, 0.3);">
+                <p class="text-purple-300 font-bold">1. علاقة المقدار المؤثر بالتيار الأعظم:</p>
+                <div class="formula-eq" dir="ltr" style="color:#e9d5ff;">I<sub>rms</sub> = I<sub>max</sub> / √2 ≈ 0.707 · I<sub>max</sub></div>
+                <div class="formula-eq" dir="ltr" style="color:#e9d5ff; margin-top:4px;">V<sub>rms</sub> = V<sub>max</sub> / √2 ≈ 0.707 · V<sub>max</sub></div>
+            </div>
+
+            <div class="formula-box" style="background:rgba(16, 185, 129, 0.08); border:1px solid rgba(16, 185, 129, 0.3);">
+                <p class="text-emerald-300 font-bold">2. قياس التيار المتناوب من الخارج (Clamp Meter):</p>
+                <p style="color:#e2e8f0; font-size:0.8rem; line-height:1.5;">
+                    يعتمد ملقط التيار على استشعار المجال المغناطيسي المتغير $\vec{B}(t)$ المتولد حول سلك التيار المتناوب عبر الحث الكهرومغناطيسي، ويقوم بحساب القيمة الفعّالة (True RMS) وعرضها مباشرة دون الحاجة لقطع السلك أو مقاطعة الدائرة.
+                </p>
+            </div>
+
+            <div class="formula-box" style="background:rgba(245, 158, 11, 0.08); border:1px solid rgba(245, 158, 11, 0.3);">
+                <p class="text-amber-300 font-bold">3. قانون القدرة والتأثير الحراري في المقاومة:</p>
+                <div class="formula-eq" dir="ltr" style="color:#fed7aa;">P<sub>avg</sub> = I²<sub>rms</sub> · R = ½ · I²<sub>max</sub> · R</div>
+                <div class="formula-eq" dir="ltr" style="color:#fed7aa; margin-top:4px;">W = P<sub>avg</sub> · t = I²<sub>rms</sub> · R · t</div>
+            </div>
+
+            <div style="background:rgba(0, 210, 255, 0.06); border:1px solid rgba(0, 210, 255, 0.2); border-radius:10px; padding:12px; text-align:center; margin-top:10px;">
+                <p style="color:#e0f2fe; font-weight:700; font-size:0.8rem; line-height:1.6;">
+                    تذكّر: أجهزة قياس التيار المتناوب في الحياة اليومية والفيزياء تقيس دائماً المقدار المؤثر (RMS) وليس المقدار الأعظم، والتأثير الحراري لا يعتمد على اتجاه التيار لأن القدرة تتناسب طردياً مع مربع التيار ($I^2$).
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN JAVASCRIPT ENGINE -->
+    <script>
+        'use strict';
+        gsap.registerPlugin(Draggable);
+
+        // =====================================================
+        // STATE & CONFIG
+        // =====================================================
+        let animTime = 0;
+        let cachedWsRect = null;
+        let cachedGraphRect = null;
+
+        const state = {
+            components: {},
+            circuitClosed: false,
+            clampAttached: false,
+            clampMode: 'rms', // 'rms' or 'peak'
+            circuitValid: false
+        };
+
+        // Component positions (relative to center)
+        const config = {
+            components: [
+                { id: 'ac-source', name: 'مجهز AC', w: 120, h: 140, gx: -0.28, gy: 0.0 },
+                { id: 'load-lamp', name: 'مصباح الحمل', w: 85, h: 140, gx: 0.28, gy: 0.0 },
+                { id: 'clamp-meter', name: 'ملقط التيار (Clamp)', w: 85, h: 125, gx: 0.0, gy: 0.0 }
+            ]
+        };
+
+        // DOM References
+        const workspaceEl = document.getElementById('workspace');
+        const dropzonesContainer = document.getElementById('dropzones-container');
+        const wiresSVG = document.getElementById('wires-svg');
+        const ghostWire = document.getElementById('ghost-wire');
+        const statusText = document.getElementById('status-text');
+        const clampStatusText = document.getElementById('clamp-status-text');
+        const clampLcdText = document.getElementById('clamp-lcd-text');
+        const clampLcdBadge = document.getElementById('clamp-lcd-badge');
+        const clampIndicatorPill = document.getElementById('clamp-indicator-pill');
+        const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+        const sidebarToggleLabel = document.getElementById('sidebar-toggle-label');
+        const clampDeviceToggle = document.getElementById('clamp-device-toggle');
+        const imaxSlider = document.getElementById('imax-slider');
+        const resSlider = document.getElementById('res-slider');
+        const freqSlider = document.getElementById('freq-slider');
+        const imaxValText = document.getElementById('imax-val');
+        const resValText = document.getElementById('res-val');
+        const freqValText = document.getElementById('freq-val');
+        const imaxNumText = document.getElementById('imax-val-text');
+        const irmsNumText = document.getElementById('irms-val-text');
+        const powerValText = document.getElementById('power-val-text');
+        const resetBtn = document.getElementById('reset-btn');
+        const formulasBtn = document.getElementById('formulas-btn');
+        const formulasModal = document.getElementById('formulas-overlay');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+
+        // Wiring System Variables
+        let wires = [];
+        let isDrawingWire = false;
+        let drawingStartTerminal = null;
+
+        // =====================================================
+        // INITIALIZATION
+        // =====================================================
+        window.addEventListener('DOMContentLoaded', () => {
+            buildDropzones();
+            initDraggables();
+            initWireEvents();
+            updateToolboxVisibility();
+            initControls();
+            
+            window.addEventListener('resize', onResize);
+            onResize();
+            
+            requestAnimationFrame(animLoop);
+        });
+
+        function setStatus(msg, color = '#ff9f43') {
+            if (statusText) {
+                statusText.textContent = msg;
+                statusText.style.color = color;
+            }
+        }
+
+        // =====================================================
+        // TOOLBOX VISIBILITY & COMPONENT RE-POPULATION
+        // =====================================================
+        function updateToolboxVisibility() {
+            config.components.forEach(comp => {
+                const wrapper = document.getElementById(`wrapper-${comp.id}`);
+                const el = document.getElementById(comp.id);
+                if (!wrapper || !el) return;
+
+                const isPlaced = !!state.components[comp.id];
+                wrapper.style.display = isPlaced ? 'none' : 'flex';
+                el.style.display = 'block';
+
+                if (!isPlaced) {
+                    if (el.parentElement !== wrapper) {
+                        wrapper.appendChild(el);
+                    }
+                    el.dataset.locked = 'false';
+                    gsap.set(el, { clearProps: 'x,y,left,top,transform,zIndex,opacity,visibility,scale,boxShadow,margin' });
+                    el.style.position = 'relative';
+                    el.style.left = '';
+                    el.style.top = '';
+                    el.style.width = comp.w + 'px';
+                    el.style.height = comp.h + 'px';
+
+                    const d = Draggable.get(el);
+                    if (d) {
+                        d.enable();
+                        d.update();
+                    }
+                }
+            });
+        }
+
+        // =====================================================
+        // DROPZONES CREATION
+        // =====================================================
+        function getRailCoordinates() {
+            const rect = workspaceEl.getBoundingClientRect();
+            const centerY = rect.height / 2;
+            const railOffset = 55; // Exact distance from center to each rail (110px total distance)
+            return {
+                yTop: centerY - railOffset,
+                yBottom: centerY + railOffset,
+                centerY: centerY,
+                rect: rect
+            };
+        }
+
+        function buildDropzones() {
+            dropzonesContainer.innerHTML = '';
+            const rails = getRailCoordinates();
+            const rect = rails.rect;
+
+            config.components.forEach(comp => {
+                let absX = rect.width / 2 + comp.gx * rect.width;
+                let absY = rails.centerY;
+
+                // When clamped, top rail (centerY - 55) passes right through aperture at y = 20 in clamp SVG!
+                // So center of clamp meter (height 125) is at (centerY - 55 - 20) + 62.5 = centerY - 12.5px!
+                if (comp.id === 'clamp-meter') {
+                    absX = rect.width / 2;
+                    absY = rails.centerY - 12.5;
+                }
+
+                const dz = document.createElement('div');
+                dz.className = 'dropzone';
+                dz.id = `dz-${comp.id}`;
+                dz.dataset.accepts = comp.id;
+                dz.style.width = `${comp.w + 16}px`;
+                dz.style.height = `${comp.h + 16}px`;
+                dz.style.left = `${absX}px`;
+                dz.style.top = `${absY}px`;
+
+                if (state.components[comp.id]) {
+                    dz.classList.add('occupied');
+                }
+
+                const label = document.createElement('span');
+                label.className = 'dropzone-label';
+                label.textContent = comp.name;
+                dz.appendChild(label);
+
+                dropzonesContainer.appendChild(dz);
+            });
+        }
+
+        // =====================================================
+        // DRAGGABLE LOGIC (Powered by EliteEngine)
+        // =====================================================
+        function initDraggables() {
+            const comps = config.components
+                .map(c => document.getElementById(c.id))
+                .filter(Boolean);
+
+            EliteEngine.setupToolboxDraggables({
+                elements: comps,
+                workspace: workspaceEl,
+                getDropZone: (comp) => document.getElementById(`dz-${comp.id}`),
+                snapDistance: 80,
+                zIndex: 1000,
+                onDrop: (comp, dz) => {
+                    snapToDropzone(comp, dz, comp.id);
+                },
+                onReturn: (comp) => {
+                    returnToToolbox(comp.id);
+                }
+            });
+        }
+
+        function snapToDropzone(el, dz, id) {
+            const comp = config.components.find(c => c.id === id);
+            if (!comp) return;
+
+            const rails = getRailCoordinates();
+            const rect = rails.rect;
+            let absX = rect.width / 2 + comp.gx * rect.width;
+            let absY = rails.centerY;
+
+            if (id === 'clamp-meter') {
+                absX = rect.width / 2;
+                absY = rails.centerY - 12.5; // Upper wire passes right through the clamp jaws aperture!
+            }
+
+            const targetX = absX - comp.w / 2;
+            const targetY = absY - comp.h / 2;
+
+            workspaceEl.appendChild(el);
+
+            gsap.set(el, {
+                zIndex: id === 'clamp-meter' ? 28 : 20,
+                position: 'absolute',
+                width: comp.w + 'px',
+                height: comp.h + 'px',
+                margin: 0
+            });
+
+            gsap.to(el, {
+                left: targetX,
+                top: targetY,
+                x: 0,
+                y: 0,
+                duration: 0.28,
+                ease: 'back.out(1.4)',
+                onComplete: () => {
+                    el.dataset.locked = 'true';
+                    if (dz) dz.classList.add('occupied');
+                    state.components[id] = true;
+
+                    const wrapper = document.getElementById(`wrapper-${id}`);
+                    if (wrapper) wrapper.style.display = 'none';
+
+                    const d = Draggable.get(el);
+                    if (d) d.disable();
+
+                    repositionWires();
+                    checkCircuitState();
+                }
+            });
+        }
+
+        function returnToToolbox(id) {
+            delete state.components[id];
+
+            const compEl = document.getElementById(id);
+            if (compEl) {
+                const termIds = Array.from(compEl.querySelectorAll('.terminal-node')).map(t => t.id);
+                wires = wires.filter(w => {
+                    if (termIds.includes(w.sourceId) || termIds.includes(w.targetId)) {
+                        w.path.remove();
+                        w.btn.remove();
+                        if (w.sourceEl) w.sourceEl.classList.remove('connected');
+                        if (w.targetEl) w.targetEl.classList.remove('connected');
+                        return false;
+                    }
+                    return true;
+                });
+            }
+
+            const dz = document.getElementById(`dz-${id}`);
+            if (dz) dz.classList.remove('occupied', 'highlight');
+
+            updateToolboxVisibility();
+            checkCircuitState();
+        }
+
+        // =====================================================
+        // MANUAL WIRING SYSTEM
+        // =====================================================
+        function initWireEvents() {
+            document.querySelectorAll('.terminal-node').forEach(t => {
+                t.onmousedown = (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    startWireDrawing(t);
+                };
+                t.ontouchstart = (e) => {
+                    e.stopPropagation();
+                    if (e.touches.length > 0) startWireDrawing(t);
+                };
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (!isDrawingWire || !drawingStartTerminal) return;
+                const wsRect = workspaceEl.getBoundingClientRect();
+                const startPos = getTerminalCenter(drawingStartTerminal);
+                const mouseX = e.clientX - wsRect.left;
+                const mouseY = e.clientY - wsRect.top;
+                ghostWire.setAttribute('d', createWirePath(startPos.x, startPos.y, mouseX, mouseY));
+            });
+
+            window.addEventListener('touchmove', (e) => {
+                if (!isDrawingWire || !drawingStartTerminal || !e.touches[0]) return;
+                const wsRect = workspaceEl.getBoundingClientRect();
+                const startPos = getTerminalCenter(drawingStartTerminal);
+                const mouseX = e.touches[0].clientX - wsRect.left;
+                const mouseY = e.touches[0].clientY - wsRect.top;
+                ghostWire.setAttribute('d', createWirePath(startPos.x, startPos.y, mouseX, mouseY));
+            }, { passive: false });
+
+            window.addEventListener('mouseup', handleWireDrop);
+            window.addEventListener('touchend', handleWireDrop);
+        }
+
+        function getTerminalCenter(termEl) {
+            const rect = termEl.getBoundingClientRect();
+            const wsRect = workspaceEl.getBoundingClientRect();
+            return {
+                x: rect.left - wsRect.left + rect.width / 2,
+                y: rect.top - wsRect.top + rect.height / 2
+            };
+        }
+
+        function createWirePath(x1, y1, x2, y2) {
+            // Perfectly straight horizontal rail when connected
+            const dx = x2 - x1;
+            return `M ${x1} ${y1} C ${x1 + dx * 0.45} ${y1}, ${x1 + dx * 0.55} ${y2}, ${x2} ${y2}`;
+        }
+
+        function isPairExpected(id1, id2) {
+            const isPairTop = (id1 === 'ac-term-top' && id2 === 'lamp-term-top') || (id1 === 'lamp-term-top' && id2 === 'ac-term-top');
+            const isPairBottom = (id1 === 'ac-term-bottom' && id2 === 'lamp-term-bottom') || (id1 === 'lamp-term-bottom' && id2 === 'ac-term-bottom');
+            return isPairTop || isPairBottom;
+        }
+
+        function startWireDrawing(term) {
+            const parentComp = term.closest('.elite-component');
+            if (parentComp && parentComp.closest('#inventory, #toolbox')) {
+                setStatus('اسحب المكون أولاً إلى ساحة التجربة قبل توصيل الأسلاك', '#ff9f43');
+                return;
+            }
+
+            isDrawingWire = true;
+            drawingStartTerminal = term;
+            ghostWire.setAttribute('visibility', 'visible');
+
+            document.querySelectorAll('.terminal-node').forEach(t => {
+                if (t === term || t.offsetParent === null) return;
+                const comp = t.closest('.elite-component');
+                if (!comp || comp.closest('#inventory, #toolbox')) return;
+
+                const isExpected = isPairExpected(term.id, t.id);
+                const alreadyConnected = wires.some(w =>
+                    (w.sourceId === term.id && w.targetId === t.id) ||
+                    (w.sourceId === t.id && w.targetId === term.id)
+                );
+
+                if (isExpected && !alreadyConnected) {
+                    t.classList.add('target-glow');
+                }
+            });
+        }
+
+        function handleWireDrop(e) {
+            if (!isDrawingWire) return;
+
+            document.querySelectorAll('.terminal-node').forEach(t => {
+                t.classList.remove('target-glow');
+            });
+            ghostWire.setAttribute('visibility', 'hidden');
+            ghostWire.setAttribute('d', '');
+
+            const clientX = e.clientX !== undefined ? e.clientX : (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientX : 0);
+            const clientY = e.clientY !== undefined ? e.clientY : (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientY : 0);
+
+            let snappedTerm = null;
+            let minDist = 48;
+
+            document.querySelectorAll('.terminal-node').forEach(t => {
+                if (t === drawingStartTerminal || t.offsetParent === null) return;
+                const comp = t.closest('.elite-component');
+                if (!comp || comp.closest('#inventory, #toolbox')) return;
+
+                const tRect = t.getBoundingClientRect();
+                const tx = tRect.left + tRect.width / 2;
+                const ty = tRect.top + tRect.height / 2;
+                const dist = Math.hypot(clientX - tx, clientY - ty);
+                if (dist < minDist) {
+                    minDist = dist;
+                    snappedTerm = t;
+                }
+            });
+
+            if (snappedTerm && drawingStartTerminal) {
+                if (isPairExpected(drawingStartTerminal.id, snappedTerm.id)) {
+                    drawPermanentWire(drawingStartTerminal, snappedTerm);
+                } else {
+                    setStatus('توصيل غير متوافق — يرجى توصيل القطب العلوي بالعلوي، والقطب السفلي بالسفلي', '#ef4444');
+                }
+            }
+
+            isDrawingWire = false;
+            drawingStartTerminal = null;
+        }
+
+        function drawPermanentWire(sourceTerm, targetTerm) {
+            const existing = wires.find(w =>
+                (w.sourceId === sourceTerm.id && w.targetId === targetTerm.id) ||
+                (w.sourceId === targetTerm.id && w.targetId === sourceTerm.id)
+            );
+            if (existing) return;
+
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.classList.add('custom-wire');
+            wiresSVG.appendChild(path);
+
+            const btn = document.createElement('button');
+            btn.className = 'wire-del-btn';
+            btn.innerHTML = '&times;';
+            btn.title = 'حذف السلك';
+            workspaceEl.appendChild(btn);
+
+            const wireObj = {
+                id: `wire-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+                sourceId: sourceTerm.id,
+                targetId: targetTerm.id,
+                sourceEl: sourceTerm,
+                targetEl: targetTerm,
+                path,
+                btn
+            };
+
+            sourceTerm.classList.add('connected');
+            targetTerm.classList.add('connected');
+
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                wires = wires.filter(w => w.id !== wireObj.id);
+                wireObj.path.remove();
+                wireObj.btn.remove();
+
+                [sourceTerm, targetTerm].forEach(t => {
+                    const hasWire = wires.some(w => w.sourceId === t.id || w.targetId === t.id);
+                    if (!hasWire) t.classList.remove('connected');
+                });
+
+                checkCircuitState();
+            });
+
+            wires.push(wireObj);
+            updateWirePath(wireObj);
+
+            checkCircuitState();
+        }
+
+        // Always position delete button 40px to the left of the rightmost terminal (lamp side, zero clash with AC source or clamp)
+        function updateWirePath(wire) {
+            const p1 = getTerminalCenter(wire.sourceEl);
+            const p2 = getTerminalCenter(wire.targetEl);
+            wire.path.setAttribute('d', createWirePath(p1.x, p1.y, p2.x, p2.y));
+
+            const rightX = Math.max(p1.x, p2.x);
+            const lampY = p1.x > p2.x ? p1.y : p2.y;
+            const btnX = rightX - 40;
+            const btnY = lampY;
+            wire.btn.style.left = `${btnX}px`;
+            wire.btn.style.top = `${btnY}px`;
+        }
+
+        function repositionWires() {
+            wires.forEach(w => updateWirePath(w));
+        }
+
+        // =====================================================
+        // CLAMP METER MODE TOGGLE (RMS ⇄ PEAK)
+        // =====================================================
+        function toggleClampMode() {
+            state.clampMode = state.clampMode === 'rms' ? 'peak' : 'rms';
+
+            if (clampIndicatorPill) {
+                if (state.clampMode === 'rms') {
+                    clampIndicatorPill.textContent = 'RMS MODE';
+                    clampIndicatorPill.className = 'text-[10px] px-2 py-0.5 rounded font-mono font-bold bg-emerald-950/60 border border-emerald-500/40 text-emerald-400';
+                } else {
+                    clampIndicatorPill.textContent = 'PEAK MODE';
+                    clampIndicatorPill.className = 'text-[10px] px-2 py-0.5 rounded font-mono font-bold bg-amber-950/60 border border-amber-500/40 text-amber-400';
+                }
+            }
+
+            if (sidebarToggleLabel) {
+                sidebarToggleLabel.textContent = state.clampMode === 'rms' 
+                    ? 'وضع الملقط: [ RMS المؤثر ] (اضغط للتحويل لـ PEAK)'
+                    : 'وضع الملقط: [ PEAK الأعظم ] (اضغط للتحويل لـ RMS)';
+            }
+
+            checkCircuitState();
+        }
+
+        function checkCircuitState() {
+            const hasSource = !!state.components['ac-source'];
+            const hasLamp = !!state.components['load-lamp'];
+            const hasClamp = !!state.components['clamp-meter'];
+
+            const wireTop = wires.find(w => (w.sourceId === 'ac-term-top' && w.targetId === 'lamp-term-top') || (w.sourceId === 'lamp-term-top' && w.targetId === 'ac-term-top'));
+            const wireBottom = wires.find(w => (w.sourceId === 'ac-term-bottom' && w.targetId === 'lamp-term-bottom') || (w.sourceId === 'lamp-term-bottom' && w.targetId === 'ac-term-bottom'));
+
+            state.circuitClosed = hasSource && hasLamp && !!wireTop && !!wireBottom;
+            state.clampAttached = hasClamp;
+            state.circuitValid = state.circuitClosed && state.clampAttached;
+
+            if (!hasSource || !hasLamp) {
+                setStatus('يرجى سحب مصدر التيار المتناوب ومصباح الحمل إلى ساحة التجربة', '#ff9f43');
+            } else if (!wireTop && !wireBottom) {
+                setStatus('الدائرة مفتوحة — قم بتوصيل السلكين (العلوي والسفلي) بين المصدر والمصباح', '#c4b5fd');
+            } else if (!wireTop || !wireBottom) {
+                setStatus('وصّل السلك المتبقي لإكمال حلقة التيار المتناوب المغلقة', '#c4b5fd');
+            } else if (!state.clampAttached) {
+                setStatus('الدائرة المتناوبة تعمل والمصباح يتوهج! علق ملقط التيار (Clamp Meter) حول السلك العلوي لقياس التيار من الخارج', '#38bdf8');
+            } else {
+                if (state.clampMode === 'rms') {
+                    setStatus('الملقط يقيس المقدار المؤثر الفعّال (True RMS): Irms = 0.707 × Imax', '#10b981');
+                } else {
+                    setStatus('الملقط يقيس ذروة الموجة العظمى (Peak Amplitude): Imax', '#facc15');
+                }
+            }
+
+            // Update Clamp Meter Display
+            if (clampStatusText && clampLcdText) {
+                const Imax = parseFloat(imaxSlider.value);
+                const Irms = Imax / Math.SQRT2;
+
+                if (state.clampAttached) {
+                    clampStatusText.textContent = state.clampMode === 'rms' ? 'مفعّل (وضع RMS المؤثر)' : 'مفعّل (وضع PEAK الأعظم)';
+                    clampStatusText.className = state.clampMode === 'rms' ? 'font-bold text-emerald-400' : 'font-bold text-amber-400';
+
+                    if (state.circuitClosed) {
+                        if (state.clampMode === 'rms') {
+                            clampLcdText.textContent = `${Irms.toFixed(2)} A`;
+                            clampLcdText.style.fill = '#34d399';
+                            if (clampLcdBadge) {
+                                clampLcdBadge.textContent = 'TRUE RMS';
+                                clampLcdBadge.style.fill = '#6ee7b7';
+                            }
+                        } else {
+                            clampLcdText.textContent = `${Imax.toFixed(2)} A`;
+                            clampLcdText.style.fill = '#facc15';
+                            if (clampLcdBadge) {
+                                clampLcdBadge.textContent = 'PEAK MAX';
+                                clampLcdBadge.style.fill = '#fde047';
+                            }
+                        }
+                    } else {
+                        clampLcdText.textContent = '0.00 A';
+                        clampLcdText.style.fill = '#94a3b8';
+                    }
+                } else {
+                    clampStatusText.textContent = 'بانتظار التعليق على السلك';
+                    clampStatusText.className = 'font-bold text-amber-400';
+                    clampLcdText.textContent = '--- A';
+                    clampLcdText.style.fill = '#64748b';
+                }
+            }
+
+            updateCalculations();
+        }
+
+        // =====================================================
+        // CONTROLS & CALCULATIONS
+        // =====================================================
+        function initControls() {
+            if (imaxSlider) {
+                imaxSlider.addEventListener('input', () => {
+                    if (imaxValText) imaxValText.textContent = `${parseFloat(imaxSlider.value).toFixed(1)} A`;
+                    updateCalculations();
+                });
+            }
+
+            if (resSlider) {
+                resSlider.addEventListener('input', () => {
+                    if (resValText) resValText.textContent = `${resSlider.value} Ω`;
+                    updateCalculations();
+                });
+            }
+
+            if (freqSlider) {
+                freqSlider.addEventListener('input', () => {
+                    if (freqValText) freqValText.textContent = `${freqSlider.value} Hz`;
+                });
+            }
+
+            if (sidebarToggleBtn) sidebarToggleBtn.addEventListener('click', toggleClampMode);
+            if (clampDeviceToggle) clampDeviceToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleClampMode();
+            });
+
+            if (resetBtn) resetBtn.addEventListener('click', resetExperiment);
+            if (formulasBtn) formulasBtn.addEventListener('click', () => formulasModal.classList.add('open'));
+            if (closeModalBtn) closeModalBtn.addEventListener('click', () => formulasModal.classList.remove('open'));
+            if (formulasModal) {
+                formulasModal.addEventListener('click', (e) => {
+                    if (e.target === formulasModal) formulasModal.classList.remove('open');
+                });
+            }
+        }
+
+        function updateCalculations() {
+            const Imax = parseFloat(imaxSlider.value);
+            const R = parseFloat(resSlider.value);
+            const Irms = Imax / Math.SQRT2; // 0.707 * Imax
+            const Pavg = Irms * Irms * R;
+
+            if (imaxNumText) imaxNumText.textContent = Imax.toFixed(2);
+            if (irmsNumText) irmsNumText.textContent = Irms.toFixed(2);
+            if (powerValText) powerValText.textContent = Pavg.toFixed(1);
+
+            if (state.clampAttached && clampLcdText) {
+                if (state.circuitClosed) {
+                    clampLcdText.textContent = state.clampMode === 'rms' ? `${Irms.toFixed(2)} A` : `${Imax.toFixed(2)} A`;
+                } else {
+                    clampLcdText.textContent = '0.00 A';
+                }
+            }
+
+            // Update Incandescent Bulb Glow Physics
+            const bulbSvg = document.getElementById('bulb-svg-element');
+            const bulbAura = document.getElementById('bulb-aura');
+            const bulbRays = document.getElementById('bulb-rays');
+            const bulbGasFill = document.getElementById('bulb-gas-fill');
+            const bulbFilament = document.getElementById('bulb-filament');
+
+            if (state.circuitClosed && Pavg > 0) {
+                const intensity = Math.min(1.0, Math.max(0.08, Pavg / 500));
+
+                if (bulbGasFill) bulbGasFill.style.opacity = (0.25 + intensity * 0.75).toFixed(2);
+                if (bulbAura) bulbAura.style.opacity = (0.3 + intensity * 0.7).toFixed(2);
+                if (bulbRays) bulbRays.style.opacity = (0.2 + intensity * 0.8).toFixed(2);
+
+                if (bulbFilament) {
+                    bulbFilament.style.stroke = intensity > 0.5 ? '#ffffff' : '#fef08a';
+                    bulbFilament.style.strokeWidth = (2.2 + intensity * 1.4).toFixed(1);
+                    bulbFilament.style.filter = `drop-shadow(0 0 ${4 + intensity * 10}px #ff9100) drop-shadow(0 0 ${8 + intensity * 16}px #ffea00)`;
+                }
+
+                if (bulbSvg) {
+                    const glowPx = Math.round(8 + intensity * 32);
+                    bulbSvg.style.filter = `drop-shadow(0 0 ${glowPx}px rgba(245, 158, 11, ${0.4 + intensity * 0.5})) drop-shadow(0 0 ${Math.round(glowPx * 0.5)}px rgba(251, 191, 36, 0.8))`;
+                }
+            } else {
+                if (bulbGasFill) bulbGasFill.style.opacity = '0';
+                if (bulbAura) bulbAura.style.opacity = '0';
+                if (bulbRays) bulbRays.style.opacity = '0';
+                if (bulbFilament) {
+                    bulbFilament.style.stroke = '#64748b';
+                    bulbFilament.style.strokeWidth = '2.2';
+                    bulbFilament.style.filter = 'none';
+                }
+                if (bulbSvg) bulbSvg.style.filter = 'none';
+            }
+        }
+
+        function resetExperiment(resetSliders = true) {
+            state.components = {};
+            state.circuitClosed = false;
+            state.clampAttached = false;
+            state.clampMode = 'rms';
+            state.circuitValid = false;
+
+            wires.forEach(w => {
+                w.path.remove();
+                w.btn.remove();
+            });
+            wires = [];
+
+            document.querySelectorAll('.dropzone').forEach(dz => {
+                dz.classList.remove('occupied', 'highlight');
+            });
+
+            document.querySelectorAll('.terminal-node').forEach(t => {
+                t.classList.remove('connected', 'target-glow');
+            });
+
+            config.components.forEach(comp => {
+                const el = document.getElementById(comp.id);
+                const wrapper = document.getElementById(`wrapper-${comp.id}`);
+                if (el && wrapper) {
+                    wrapper.appendChild(el);
+                    el.dataset.locked = 'false';
+                    gsap.set(el, { clearProps: 'all' });
+                    el.style.position = 'relative';
+                    el.style.width = comp.w + 'px';
+                    el.style.height = comp.h + 'px';
+
+                    const draggable = Draggable.get(el);
+                    if (draggable) draggable.enable();
+                }
+            });
+
+            updateToolboxVisibility();
+
+            if (resetSliders) {
+                if (imaxSlider) imaxSlider.value = 5;
+                if (resSlider) resSlider.value = 10;
+                if (freqSlider) freqSlider.value = 50;
+                if (imaxValText) imaxValText.textContent = '5.0 A';
+                if (resValText) resValText.textContent = '10 Ω';
+                if (freqValText) freqValText.textContent = '50 Hz';
+            }
+
+            setStatus('يرجى سحب المصدر والمصباح وتوصيل السلكين، ثم تعليق ملقط التيار', '#ff9f43');
+            checkCircuitState();
+        }
+
+        // =====================================================
+        // CANVAS RENDERING (AC ELECTRONS & DUAL-LAYER GRAPH)
+        // =====================================================
+        function onResize() {
+            const canvas1 = document.getElementById('workspace-canvas');
+            const canvas2 = document.getElementById('rms-graph');
+            if (canvas1 && canvas1.parentElement) cachedWsRect = canvas1.parentElement.getBoundingClientRect();
+            if (canvas2) cachedGraphRect = canvas2.getBoundingClientRect();
+
+            buildDropzones();
+            repositionWires();
+            drawWorkspaceCanvas();
+            drawGraph();
+        }
+
+        function animLoop() {
+            animTime += 0.04;
+            drawWorkspaceCanvas();
+            drawGraph();
+            requestAnimationFrame(animLoop);
+        }
+
+        // 1. WORKSPACE AC ELECTRONS CANVAS
+        function drawWorkspaceCanvas() {
+            const canvas = document.getElementById('workspace-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = cachedWsRect || canvas.parentElement.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) return;
+
+            if (canvas.width !== rect.width * dpr || canvas.height !== rect.height * dpr) {
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+            }
+
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            const W = rect.width;
+            const H = rect.height;
+            const rails = getRailCoordinates();
+            const yTop = rails.yTop;       // Exact matching Y for upper rail
+            const yBottom = rails.yBottom; // Exact matching Y for lower rail
+
+            const xLeft = W / 2 + config.components[0].gx * W + 43;
+            const xRight = W / 2 + config.components[1].gx * W - (config.components[1].w / 2);
+
+            // If circuit is closed, animate authentic alternating current (AC electrons oscillating on the wire)
+            if (state.circuitClosed) {
+                const Imax = parseFloat(imaxSlider.value);
+                const freq = parseFloat(freqSlider.value);
+                const speed = (freq / 50) * 3.5;
+                const currentPhase = Math.sin(animTime * speed);
+
+                const particleCount = 18;
+                ctx.fillStyle = '#7552FF';
+                ctx.shadowColor = '#a855f7';
+                ctx.shadowBlur = 8;
+
+                for (let i = 0; i < particleCount; i++) {
+                    const baseNorm = (i / particleCount);
+                    const offset = currentPhase * (32 / (xRight - xLeft));
+                    let norm = (baseNorm + offset) % 1.0;
+                    if (norm < 0) norm += 1.0;
+
+                    const pxTop = xLeft + norm * (xRight - xLeft);
+                    const pxBottom = xRight - norm * (xRight - xLeft);
+
+                    // Upper rail electron (exactly on the top wire)
+                    ctx.beginPath();
+                    ctx.arc(pxTop, yTop, 3.5, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Lower rail electron (exactly on the bottom wire in anti-phase)
+                    ctx.beginPath();
+                    ctx.arc(pxBottom, yBottom, 3.5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.shadowBlur = 0;
+
+                // Subtle glowing magnetic flux inside the clamp jaws aperture only
+                if (state.clampAttached) {
+                    const clampX = W / 2;
+                    const clampY = yTop;
+
+                    ctx.strokeStyle = 'rgba(16, 185, 129, 0.45)';
+                    ctx.lineWidth = 1.5;
+                    ctx.setLineDash([3, 3]);
+                    ctx.shadowColor = '#10b981';
+                    ctx.shadowBlur = 6;
+
+                    const pulse = 9 + Math.abs(currentPhase) * 3;
+                    ctx.beginPath();
+                    ctx.ellipse(clampX, clampY, pulse * 1.2, pulse, 0, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    ctx.shadowBlur = 0;
+                    ctx.setLineDash([]);
+                }
+            }
+        }
+
+        // 2. DUAL-LAYER GRAPH CANVAS (SINE WAVE + HIGHLIGHTED LEVEL)
+        function drawGraph() {
+            const canvas = document.getElementById('rms-graph');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = cachedGraphRect || canvas.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) return;
+
+            if (canvas.width !== rect.width * dpr || canvas.height !== rect.height * dpr) {
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+            }
+
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            const W = rect.width;
+            const H = rect.height;
+
+            const padL = 32;
+            const padR = 10;
+            const padT = 14;
+            const padB = 16;
+            const graphW = W - padL - padR;
+            const graphH = H - padT - padB;
+            const centerY = padT + graphH / 2;
+
+            // GRID
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([2, 4]);
+
+            for (let i = 0; i <= 4; i++) {
+                const y = padT + (graphH / 4) * i;
+                ctx.beginPath();
+                ctx.moveTo(padL, y);
+                ctx.lineTo(padL + graphW, y);
+                ctx.stroke();
+            }
+            ctx.setLineDash([]);
+
+            // AXES
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(padL, centerY);
+            ctx.lineTo(padL + graphW + 4, centerY);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(padL, padT - 4);
+            ctx.lineTo(padL, padT + graphH + 4);
+            ctx.stroke();
+
+            // Ticks & Labels
+            ctx.fillStyle = '#fca5a5';
+            ctx.font = 'bold 8px Outfit, sans-serif';
+            ctx.textAlign = 'right';
+            ctx.fillText('+Im', padL - 3, padT + 8);
+            ctx.fillText('0', padL - 3, centerY + 3);
+            ctx.fillText('-Im', padL - 3, padT + graphH - 2);
+
+            const Imax = parseFloat(imaxSlider.value || 5);
+            const amplitude = state.circuitClosed ? Math.min(graphH * 0.44, (Imax / 10) * (graphH * 0.44)) : 0;
+            const rmsAmplitude = amplitude / Math.SQRT2;
+
+            // 1. SINE WAVE i(t)
+            ctx.strokeStyle = '#c084fc';
+            ctx.lineWidth = 2;
+            ctx.shadowColor = '#a855f7';
+            ctx.shadowBlur = 8;
+            ctx.beginPath();
+            for (let px = padL; px <= padL + graphW; px += 1.5) {
+                const t = (px - padL) / graphW;
+                const cycles = 2.0;
+                const py = centerY - Math.sin((t * cycles * 2 * Math.PI) - (animTime * 3)) * amplitude;
+
+                if (px === padL) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // 2. HIGHLIGHT LINE ON GRAPH (Dynamically linked to Clamp Meter Mode!)
+            if (state.clampAttached && state.circuitClosed && amplitude > 0) {
+                if (state.clampMode === 'rms') {
+                    const rmsY = centerY - rmsAmplitude;
+                    ctx.strokeStyle = '#10b981';
+                    ctx.lineWidth = 2.5;
+                    ctx.setLineDash([5, 4]);
+                    ctx.shadowColor = '#10b981';
+                    ctx.shadowBlur = 8;
+
+                    ctx.beginPath();
+                    ctx.moveTo(padL, rmsY);
+                    ctx.lineTo(padL + graphW, rmsY);
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                    ctx.setLineDash([]);
+
+                    ctx.fillStyle = '#6ee7b7';
+                    ctx.font = 'bold 8px Outfit, sans-serif';
+                    ctx.textAlign = 'left';
+                    ctx.fillText('Irms (0.707 Im) = ' + (Imax * 0.707).toFixed(2) + ' A', padL + 6, rmsY - 4);
+                } else {
+                    const peakY = centerY - amplitude;
+                    ctx.strokeStyle = '#facc15';
+                    ctx.lineWidth = 2.5;
+                    ctx.setLineDash([4, 3]);
+                    ctx.shadowColor = '#facc15';
+                    ctx.shadowBlur = 8;
+
+                    ctx.beginPath();
+                    ctx.moveTo(padL, peakY);
+                    ctx.lineTo(padL + graphW, peakY);
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                    ctx.setLineDash([]);
+
+                    ctx.fillStyle = '#fde047';
+                    ctx.font = 'bold 8px Outfit, sans-serif';
+                    ctx.textAlign = 'left';
+                    ctx.fillText('Imax (Peak) = ' + Imax.toFixed(2) + ' A', padL + 6, peakY - 4);
+                }
+            }
+        }
+    </script>
+    <script src="../js/raqeem-navigation.js"></script>
+</body>
+
+</html>

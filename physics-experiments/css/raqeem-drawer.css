@@ -1,0 +1,291 @@
+/**
+ * RAQEEM Physics Platform - Unified Drawer Navigation Styles
+ * Standard cross-experiment navigation drawer with native mobile touch-scrolling
+ */
+
+/* ── FLOATING MENU TOGGLE ── */
+.drawer-toggle {
+    position: fixed;
+    left: 14px;
+    top: 14px;
+    z-index: 9999;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(37, 23, 88, 0.82);
+    border: 1px solid rgba(117, 82, 255, 0.4);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #7552FF;
+    cursor: pointer;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+    transition: all 0.25s ease;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+
+.drawer-toggle:hover {
+    background: rgba(117, 82, 255, 0.25);
+    transform: scale(1.05);
+    box-shadow: 0 0 16px rgba(117, 82, 255, 0.4);
+}
+
+.drawer-toggle i {
+    font-size: 1.1rem;
+}
+
+/* ── OVERLAY BACKDROP ── */
+.drawer-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    z-index: 9998;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.drawer-overlay.visible {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* ── SLIDE-OUT DRAWER ── */
+.drawer {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100%;
+    height: 100dvh;
+    width: 320px;
+    max-width: 88vw;
+    z-index: 10000;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #120b2e;
+    border-right: 1px solid rgba(117, 82, 255, 0.25);
+    box-shadow: 12px 0 40px rgba(0, 0, 0, 0.65);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 12px 14px 16px 14px;
+    box-sizing: border-box;
+    font-family: 'Tajawal', sans-serif;
+    direction: rtl;
+    text-align: right;
+}
+
+.drawer.open {
+    transform: translateX(0);
+}
+
+/* ── HEADER BAR ── */
+.drawer-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid rgba(117, 82, 255, 0.2);
+    flex-shrink: 0;
+}
+
+.drawer-home-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    background: rgba(117, 82, 255, 0.12);
+    border: 1px solid rgba(117, 82, 255, 0.3);
+    color: #c4b5fd;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+}
+
+.drawer-home-btn:hover {
+    background: rgba(117, 82, 255, 0.24);
+    color: #fff;
+}
+
+.drawer-close-btn {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: none;
+}
+
+.drawer-close-btn:hover {
+    background: rgba(239, 68, 68, 0.24);
+}
+
+/* ── NATIVE TOUCH SCROLL AREA ── */
+.drawer-scroll-area {
+    flex: 1;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y !important;
+    overscroll-behavior-y: contain !important;
+    padding-bottom: 40px;
+    padding-right: 2px;
+}
+
+.drawer-scroll-area::-webkit-scrollbar { width: 4px; }
+.drawer-scroll-area::-webkit-scrollbar-track { background: transparent; }
+.drawer-scroll-area::-webkit-scrollbar-thumb { background: rgba(117, 82, 255, 0.3); border-radius: 2px; }
+
+/* ── ACCORDION CHAPTERS ── */
+.drawer-chapter {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 8px;
+    flex-shrink: 0 !important;
+}
+
+.drawer-chapter-header {
+    padding: 9px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    background: rgba(117, 82, 255, 0.08);
+    transition: background 0.2s;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.drawer-chapter-header:hover {
+    background: rgba(117, 82, 255, 0.16);
+}
+
+.drawer-chapter-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    white-space: nowrap;
+}
+
+.drawer-chapter-label i {
+    color: #7552FF;
+    font-size: 0.85rem;
+}
+
+.drawer-chapter-arrow {
+    font-size: 0.65rem;
+    color: #94a3b8;
+    transition: transform 0.3s ease;
+}
+
+/* ── SUBMENU & EXPERIMENT LINKS ── */
+.drawer-submenu {
+    max-height: 1000px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.28);
+    transition: max-height 0.35s ease-in-out;
+}
+
+.drawer-submenu.collapsed {
+    max-height: 0;
+}
+
+.drawer-submenu a {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 12px;
+    font-size: 0.74rem;
+    color: #c4b5fd;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.drawer-submenu a:last-child {
+    border-bottom: none;
+}
+
+.drawer-submenu a:hover {
+    background: rgba(117, 82, 255, 0.16);
+    color: #fff;
+    padding-right: 16px;
+}
+
+.drawer-submenu a.current {
+    background: rgba(117, 82, 255, 0.2);
+    color: #fff;
+    font-weight: 700;
+    border-right: 3px solid #7552FF;
+}
+
+/* ── MOBILE / LANDSCAPE RESPONSIVENESS ── */
+@media (max-height: 500px) and (orientation: landscape), (max-width: 768px) {
+    .drawer-toggle {
+        top: 8px;
+        left: 8px;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+    }
+    .drawer-toggle i {
+        font-size: 0.85rem !important;
+    }
+    .drawer {
+        width: 295px;
+        max-width: 90vw;
+        padding: 8px 10px 12px 10px;
+    }
+    .drawer-header-bar {
+        padding-bottom: 6px;
+        margin-bottom: 6px;
+    }
+    .drawer-home-btn {
+        padding: 4px 10px;
+        font-size: 0.72rem;
+    }
+    .drawer-close-btn {
+        padding: 4px 8px;
+        font-size: 0.72rem;
+    }
+    .drawer-chapter {
+        margin-bottom: 6px;
+    }
+    .drawer-chapter-header {
+        padding: 7px 10px;
+    }
+    .drawer-chapter-label {
+        font-size: 0.74rem;
+        gap: 5px;
+    }
+    .drawer-chapter-label i {
+        font-size: 0.78rem;
+    }
+    .drawer-submenu a {
+        padding: 6px 10px;
+        font-size: 0.7rem;
+    }
+}
