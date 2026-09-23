@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>الكيمياء التفاعلية</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ---------------- GLOBAL & UTILS ---------------- */
+    :root {
+      --primary: #38bdf8;
+      --secondary: #f59e0b;
+      --panel-bg: #fff9c4;
+      --panel-line: #f4e896;
+      --red-margin: #ff8a80;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Cairo', sans-serif; overflow-x: hidden; background-color: #020617; }
+    .view-container { display: none; width: 100%; min-height: 100vh; }
+
+    /* ---------------- VIEW 1: DASHBOARD ---------------- */
+    #view-dashboard { background-color: #020617; color: #f8fafc; position: relative; padding: 3rem 2rem; overflow-x: hidden; }
+    .bg-glow-1 { position: absolute; top: -20%; right: -10%; width: 60vw; height: 60vw; border-radius: 50%; background-color: rgba(30, 58, 138, 0.15); filter: blur(120px); pointer-events: none; }
+    .bg-glow-2 { position: absolute; bottom: -20%; left: -10%; width: 60vw; height: 60vw; border-radius: 50%; background-color: rgba(88, 28, 135, 0.15); filter: blur(120px); pointer-events: none; }
+    
+    .dashboard-header { text-align: center; margin-bottom: 4rem; z-index: 10; position: relative; }
+    .dashboard-header h1 { font-size: 3.5rem; font-weight: 800; margin-bottom: 1rem; background: linear-gradient(to left, #60a5fa, #c084fc, #22d3ee); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .dashboard-header p { font-size: 1.2rem; color: #94a3b8; max-width: 42rem; margin: 0 auto; font-weight: 300; line-height: 1.6; }
+    
+    .chapters-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 80rem; margin: 0 auto; position: relative; z-index: 10; }
+    
+    .chapter-card { background-color: rgba(15, 23, 42, 0.5); border: 1px solid #1e293b; border-radius: 1.5rem; overflow: hidden; cursor: pointer; transition: all 0.3s ease; position: relative; backdrop-filter: blur(8px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2); }
+    .chapter-card:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.4); border-color: rgba(255,255,255,0.1); }
+    
+    .chapter-card-top { height: 11rem; background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(0,0,0,0.3)); position: relative; }
+    .card-number { position: absolute; top: 1rem; left: 1rem; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.1); width: 2.5rem; height: 2.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.125rem; color: white; }
+    .card-icon { position: absolute; top: 1rem; right: 1rem; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.1); padding: 0.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    
+    .chapter-card-body { padding: 1.5rem; position: relative; }
+    .chapter-card h3 { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem; color: white; transition: color 0.3s; }
+    .chapter-card p { color: #94a3b8; font-size: 0.85rem; line-height: 1.6; margin-bottom: 1.5rem; }
+    
+    .explore-btn { display: flex; align-items: center; font-size: 0.875rem; font-weight: 600; }
+    .explore-btn svg { margin-right: 0.5rem; transition: transform 0.3s; }
+    .chapter-card:hover .explore-btn svg { transform: translateX(-4px); }
+    
+    .card-bottom-line { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; transform: scaleX(0); transition: transform 0.5s ease; transform-origin: right; }
+    .chapter-card:hover .card-bottom-line { transform: scaleX(1); }
+
+    /* ---------------- VIEW 2: CHAPTER DETAILS ---------------- */
+    #view-chapter-1 { background-color: #020617; color: #f8fafc; position: relative; padding: 3rem; overflow-x: hidden; }
+    .header-bar { display: flex; align-items: center; margin-bottom: 3rem; position: relative; z-index: 10; max-width: 80rem; margin-left: auto; margin-right: auto; }
+    .back-btn-dark { background: transparent; border: 1px solid #334155; color: #cbd5e1; padding: 0.75rem 1.5rem; border-radius: 0.75rem; cursor: pointer; font-family: inherit; font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s; }
+    .back-btn-dark:hover { background: #1e293b; color: white; border-color: #475569; }
+    
+    .chapter-content { max-width: 80rem; margin: 0 auto; position: relative; z-index: 10; }
+    .chapter-title { font-size: 3rem; font-weight: 800; color: #FF5722; margin-bottom: 1rem; }
+    .chapter-desc { font-size: 1.25rem; color: #94a3b8; max-width: 45rem; margin-bottom: 4rem; line-height: 1.6; }
+    
+    .experiment-container { max-width: 800px; }
+    .experiment-card { background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 1.5rem; padding: 2rem; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden; backdrop-filter: blur(10px); box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+    .experiment-card::before { content: ''; position: absolute; top: 0; right: 0; width: 4px; height: 100%; background: #FF5722; }
+    .experiment-card:hover { background: rgba(30, 41, 59, 0.9); border-color: #FF5722; box-shadow: 0 0 30px rgba(255, 87, 34, 0.15); transform: translateY(-5px); }
+    .exp-info h4 { font-size: 1.5rem; font-weight: 700; color: white; margin-bottom: 0.5rem; }
+    .exp-info p { color: #94a3b8; font-size: 1.1rem; }
+    .exp-play-icon { background: rgba(255, 87, 34, 0.1); color: #FF5722; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.3s; }
+    .experiment-card:hover .exp-play-icon { background: #FF5722; color: white; transform: scale(1.1); box-shadow: 0 0 20px rgba(255,87,34,0.4); }
+
+    /* ---------------- VIEW 3: SIMULATION ---------------- */
+    #view-simulation-1 { 
+      background-image: linear-gradient(#e5e7eb 1px, transparent 1px), linear-gradient(90deg, #e5e7eb 1px, transparent 1px); 
+      background-size: 20px 20px; background-color: #f8fafc; color: #1e293b; 
+      position: relative; height: 100vh; overflow: hidden;
+    }
+    .app-container { display: flex; width: 100%; height: 100%; padding: 2rem; gap: 2rem; }
+    
+    .sim-header { position: absolute; top: 30px; right: 30px; z-index: 100; }
+    .back-btn-light { background: white; border: 2px solid #e2e8f0; color: #475569; padding: 0.75rem 1.5rem; border-radius: 0.75rem; cursor: pointer; font-family: inherit; font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    .back-btn-light:hover { background: #f8fafc; border-color: #38bdf8; color: #38bdf8; transform: translateY(-2px); }
+
+    /* SIMULATION SPECIFIC CSS */
+    .simulation-area { flex: 1; position: relative; display: flex; justify-content: center; align-items: center; border-radius: 16px; box-shadow: inset 0 0 40px rgba(0,0,0,0.03); }
+    .equation-badge { position: absolute; top: 30px; background: white; padding: 15px 40px; border-radius: 50px; font-size: 26px; font-weight: 800; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 2px solid #f1f5f9; display: flex; gap: 12px; align-items: center; z-index: 10; }
+    .badge-term-universe { color: #8b5cf6; }
+    .badge-term-system { color: #f59e0b; }
+    .badge-term-surround { color: #38bdf8; }
+
+    .side-panel { width: 420px; max-height: 85vh; margin: 2rem; transform: scale(0.95); background-color: var(--panel-bg); background-image: linear-gradient(transparent 95%, var(--panel-line) 95%); background-size: 100% 2.5rem; line-height: 2.5rem; padding: 2.5rem 2rem; border-radius: 12px; box-shadow: 15px 15px 40px rgba(0,0,0,0.1); border-right: 4px solid var(--red-margin); display: flex; flex-direction: column; position: relative; overflow-y: auto; }
+    .side-panel::before { content: ''; position: absolute; top: 0; bottom: 0; right: 40px; width: 2px; background-color: rgba(255, 138, 128, 0.4); }
+    .side-panel h2 { font-size: 24px; font-weight: 800; margin-bottom: 1.5rem; color: #334155; text-align: center; position: relative; z-index: 1; }
+    .controls { display: flex; flex-direction: column; gap: 12px; margin-bottom: 2rem; position: relative; z-index: 1; }
+    .controls button { background: white; border: 2px solid #e2e8f0; border-radius: 10px; padding: 12px 20px; font-family: inherit; font-size: 18px; font-weight: 700; color: #64748b; cursor: pointer; transition: all 0.3s; text-align: right; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+    .controls button:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.05); border-color: var(--primary); }
+    .controls button.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 8px 20px rgba(56, 189, 248, 0.3); }
+    .description-box { font-size: 18px; font-weight: 600; color: #475569; min-height: 120px; position: relative; z-index: 1; line-height: 2.5rem; }
+    .data-panel { margin-top: auto; background: #1e293b; border-radius: 12px; padding: 20px; color: #cbd5e1; display: flex; flex-direction: column; gap: 15px; position: relative; z-index: 1; box-shadow: inset 0 2px 10px rgba(0,0,0,0.2); }
+    .readout-item { display: flex; justify-content: space-between; align-items: center; font-family: monospace; font-size: 18px; background: rgba(15, 23, 42, 0.5); padding: 10px 15px; border-radius: 8px; border: 1px solid #334155; }
+    .readout-item .label { font-family: 'Cairo', sans-serif; font-weight: 700; color: #94a3b8; }
+    .readout-item .value { color: #38bdf8; font-weight: bold; text-shadow: 0 0 8px rgba(56, 189, 248, 0.5); }
+
+    .tooltip { position: fixed; top: 0; left: 0; background: rgba(15, 23, 42, 0.65); color: white; padding: 14px 20px; border-radius: 16px; font-size: 16px; font-weight: 600; pointer-events: none; opacity: 0; transition: transform 0.1s ease-out, opacity 0.2s; z-index: 1000; box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 15px rgba(56, 189, 248, 0.1); max-width: 300px; line-height: 1.6; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.15); }
+    .has-tooltip { cursor: help; }
+    .interactive-hover { transition: filter 0.3s; }
+    .interactive-hover:hover { filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.6)); }
+
+    .xray-instruction { position: absolute; bottom: 25px; font-size: 16px; color: #64748b; background: rgba(255, 255, 255, 0.9); padding: 10px 25px; border-radius: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); font-weight: 700; border: 1px solid #e2e8f0; pointer-events: none; backdrop-filter: blur(4px); }
+
+    .pot-svg { width: 100%; max-width: 550px; height: 80vh; overflow: visible; }
+    .metal-front, .thermos-front, .pot-handle, .lid-metal, .lid-thermos { transition: opacity 0.5s ease; }
+
+    #pot-container.state-isolated .metal-front, #pot-container.state-isolated .pot-handle, #pot-container.state-isolated .lid-metal { opacity: 0; }
+    #pot-container.state-isolated .thermos-front, #pot-container.state-isolated .lid-thermos { opacity: 1; }
+
+    .pot-lid { transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0; transform: translateY(-60px); }
+    #pot-container.state-closed .pot-lid, #pot-container.state-isolated .pot-lid { opacity: 1; transform: translateY(0); }
+
+    #pot-container.state-open.xray-active .metal-front, #pot-container.state-closed.xray-active .metal-front, #pot-container.state-closed.xray-active .pot-lid, #pot-container.state-isolated.xray-active .thermos-front, #pot-container.state-isolated.xray-active .lid-thermos { opacity: 0.3 !important; }
+    #pot-container.xray-active #pot-interactive { pointer-events: none; }
+
+    @keyframes heat-left { 0% { transform: translate(0,0); opacity: 0; } 20% { opacity: 0.8; } 100% { transform: translate(-40px, -20px); opacity: 0; } }
+    @keyframes heat-right { 0% { transform: translate(0,0); opacity: 0; } 20% { opacity: 0.8; } 100% { transform: translate(40px, -20px); opacity: 0; } }
+    .heat-arrow path { stroke: #ef4444; stroke-width: 8; stroke-linecap: round; fill: none; opacity: 0; }
+    #pot-container.state-open .arrow-l, #pot-container.state-closed .arrow-l { animation: heat-left 1.5s infinite ease-out; }
+    #pot-container.state-open .arrow-r, #pot-container.state-closed .arrow-r { animation: heat-right 1.5s infinite ease-out; }
+    .delay-1 { animation-delay: 0.5s; } .delay-2 { animation-delay: 1.0s; }
+    #pot-container.state-isolated .heat-arrow { display: none; }
+
+    @keyframes steam-rise { 0% { transform: translateY(0) scale(0.8); opacity: 0; } 20% { opacity: 0.7; } 100% { transform: translateY(-160px) scale(1.2); opacity: 0; } }
+    #pot-container.state-open .steam { animation: steam-rise 2.5s infinite linear; }
+    .steam.delay-1 { animation-delay: 0.8s; } .steam.delay-2 { animation-delay: 1.6s; }
+    #pot-container.state-closed .steam-group, #pot-container.state-isolated .steam-group { display: none; }
+
+    @keyframes boil { 0% { transform: translateY(0) scale(0.5); opacity: 0; } 30% { opacity: 0.9; } 100% { transform: translateY(-150px) scale(1.2); opacity: 0; } }
+    .bubble { fill: rgba(255, 255, 255, 0.8); animation: boil 1.8s infinite ease-in; }
+    .b1 { animation-delay: 0.3s; animation-duration: 2.1s; } .b2 { animation-delay: 0.7s; animation-duration: 1.6s; } .b3 { animation-delay: 1.1s; animation-duration: 1.8s; } .b4 { animation-delay: 1.5s; animation-duration: 2.0s; } .b5 { animation-delay: 0.5s; animation-duration: 1.9s; }
+  </style>
+</head>
+<body>
+
+  <!-- ================= VIEW 1: DASHBOARD ================= -->
+  <div id="view-dashboard" class="view-container">
+    <div class="bg-glow-1"></div>
+    <div class="bg-glow-2"></div>
+    
+    <header class="dashboard-header">
+      <h1>الكيمياء التفاعلية</h1>
+      <p>منصة تعليمية مبهرة لطلاب السادس العلمي، استكشف التفاعلات والمفاهيم الكيميائية بطريقة واقعية واحترافية.</p>
+    </header>
+
+    <div class="chapters-grid">
+      <!-- Chapter 1 -->
+      <div class="chapter-card" onclick="navigateTo('view-chapter-1')">
+        <div class="chapter-card-top">
+          <div class="card-icon" style="color: #FF5722;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"/></svg>
+          </div>
+          <div class="card-number">1</div>
+        </div>
+        <div class="chapter-card-body">
+          <h3 class="group-hover:text-transparent">علم الثرموداينمك</h3>
+          <p>دراسة الطاقة وتحولاتها، وقوانين الديناميكا الحرارية</p>
+          <div class="explore-btn" style="color: #FF5722;">
+            <span>استكشف الفصل</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          </div>
+        </div>
+        <div class="card-bottom-line" style="background-color: #FF5722;"></div>
+      </div>
+
+      <!-- Chapter 2 -->
+      <div class="chapter-card" onclick="window.location.href='./chapter_2/index.html'">
+        <div class="chapter-card-top">
+          <div class="card-icon" style="color: #4CAF50;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>
+          </div>
+          <div class="card-number">2</div>
+        </div>
+        <div class="chapter-card-body">
+          <h3>الاتزان الكيميائي</h3>
+          <p>حالة التوازن في التفاعلات الانعكاسية وقاعدة لوشاتليه</p>
+          <div class="explore-btn" style="color: #4CAF50;">
+            <span>استكشف الفصل</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          </div>
+        </div>
+        <div class="card-bottom-line" style="background-color: #4CAF50;"></div>
+      </div>
+
+      <!-- Chapter 3 -->
+      <div class="chapter-card" onclick="window.location.href='./chapter_3/index.html'">
+        <div class="chapter-card-top">
+          <div class="card-icon" style="color: #2196F3;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+          </div>
+          <div class="card-number">3</div>
+        </div>
+        <div class="chapter-card-body">
+          <h3>الاتزان الايوني</h3>
+          <p>توازن الايونات في المحاليل المائية، الحوامض والقواعد</p>
+          <div class="explore-btn" style="color: #2196F3;">
+            <span>استكشف الفصل</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          </div>
+        </div>
+        <div class="card-bottom-line" style="background-color: #2196F3;"></div>
+      </div>
+
+      <!-- Chapter 4 -->
+      <div class="chapter-card" onclick="alert('هذا الفصل سيكون متاحاً قريباً!')">
+        <div class="chapter-card-top">
+          <div class="card-icon" style="color: #FFEB3B;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          </div>
+          <div class="card-number">4</div>
+        </div>
+        <div class="chapter-card-body">
+          <h3>الكيمياء الكهربائية</h3>
+          <p>الخلايا الكلفانية والالكتروليتية، قوانين فاراداي</p>
+          <div class="explore-btn" style="color: #FFEB3B;">
+            <span>استكشف الفصل</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          </div>
+        </div>
+        <div class="card-bottom-line" style="background-color: #FFEB3B;"></div>
+      </div>
+
+      <!-- Chapter 5 -->
+      <div class="chapter-card" onclick="alert('هذا الفصل سيكون متاحاً قريباً!')">
+        <div class="chapter-card-top">
+          <div class="card-icon" style="color: #9C27B0;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h4l3-9 5 18 3-9h5"/></svg>
+          </div>
+          <div class="card-number">5</div>
+        </div>
+        <div class="chapter-card-body">
+          <h3>الكيمياء التناسقية</h3>
+          <p>المركبات التناسقية ونظرية آصرة التكافؤ</p>
+          <div class="explore-btn" style="color: #9C27B0;">
+            <span>استكشف الفصل</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          </div>
+        </div>
+        <div class="card-bottom-line" style="background-color: #9C27B0;"></div>
+      </div>
+
+      <!-- Chapter 6 -->
+      <div class="chapter-card" onclick="alert('هذا الفصل سيكون متاحاً قريباً!')">
+        <div class="chapter-card-top">
+          <div class="card-icon" style="color: #00BCD4;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 2v20"/><path d="M15 2v20"/><path d="M9 10h6"/></svg>
+          </div>
+          <div class="card-number">6</div>
+        </div>
+        <div class="chapter-card-body">
+          <h3>الكيمياء التحليلية</h3>
+          <p>طرق التحليل الوصفي والكمي والحجمي</p>
+          <div class="explore-btn" style="color: #00BCD4;">
+            <span>استكشف الفصل</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          </div>
+        </div>
+        <div class="card-bottom-line" style="background-color: #00BCD4;"></div>
+      </div>
+
+      <!-- Chapter 7 -->
+      <div class="chapter-card" onclick="alert('هذا الفصل سيكون متاحاً قريباً!')">
+        <div class="chapter-card-top">
+          <div class="card-icon" style="color: #8BC34A;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+          </div>
+          <div class="card-number">7</div>
+        </div>
+        <div class="chapter-card-body">
+          <h3>الكيمياء العضوية</h3>
+          <p>دراسة المركبات العضوية وتفاعلاتها</p>
+          <div class="explore-btn" style="color: #8BC34A;">
+            <span>استكشف الفصل</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          </div>
+        </div>
+        <div class="card-bottom-line" style="background-color: #8BC34A;"></div>
+      </div>
+
+      <!-- Chapter 8 -->
+      <div class="chapter-card" onclick="alert('هذا الفصل سيكون متاحاً قريباً!')">
+        <div class="chapter-card-top">
+          <div class="card-icon" style="color: #E91E63;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>
+          </div>
+          <div class="card-number">8</div>
+        </div>
+        <div class="chapter-card-body">
+          <h3>الكيمياء الحياتية</h3>
+          <p>كيمياء الكربوهيدرات والبروتينات والانزيمات</p>
+          <div class="explore-btn" style="color: #E91E63;">
+            <span>استكشف الفصل</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          </div>
+        </div>
+        <div class="card-bottom-line" style="background-color: #E91E63;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= VIEW 2: CHAPTER 1 DETAILS ================= -->
+  <div id="view-chapter-1" class="view-container">
+    <div class="bg-glow-1"></div>
+    <div class="bg-glow-2"></div>
+    
+    <div class="header-bar">
+      <button class="back-btn-dark" onclick="navigateTo('view-dashboard')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        العودة للفصول
+      </button>
+    </div>
+    
+    <div class="chapter-content">
+      <h2 class="chapter-title">علم الثرموداينمك</h2>
+      <p class="chapter-desc">دراسة الطاقة وتحولاتها، وقوانين الديناميكا الحرارية. اختر إحدى التجارب التفاعلية المتوفرة للبدء في المعمل الافتراضي.</p>
+
+      <div class="experiment-container">
+        <div class="experiment-card" onclick="navigateTo('view-simulation-1')">
+          <div class="exp-info">
+            <h4>أنواع الأنظمة الثرموداينميكية</h4>
+            <p>تعرف على الفرق بين النظام المفتوح، المغلق، والمعزول من خلال محاكاة تفاعلية لتأثيراتها على المادة والطاقة.</p>
+          </div>
+          <div class="exp-play-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          </div>
+        </div>
+
+        <div class="experiment-card" onclick="window.location.href='chapter_1/specific_heat.html'" style="margin-top: 1.5rem;">
+          <div class="exp-info">
+            <h4>التفاعلات الباعثة والماصة للحرارة</h4>
+            <p>التفاعل الباعث للحرارة: محاكاة تفاعلية توضح انتقال الطاقة الحرارية من النظام إلى المحيط الخارجي (ΔH سالبة) من خلال الألعاب النارية.</p>
+          </div>
+          <div class="exp-play-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= VIEW 3: SIMULATION ================= -->
+  <div id="view-simulation-1" class="view-container">
+    
+    <div class="sim-header">
+      <button class="back-btn-light" onclick="navigateTo('view-chapter-1')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        العودة للفصل
+      </button>
+    </div>
+
+    <div class="app-container">
+      
+      <div id="pot-container" class="simulation-area state-open has-tooltip" data-tooltip="<b>المحيط (Surroundings):</b> كل ما يحيط بالنظام">
+        
+        <div class="equation-badge">
+          <span class="badge-term-universe">المجموعة</span> = 
+          <span class="badge-term-system">النظام</span> + 
+          <span class="badge-term-surround">المحيط</span>
+        </div>
+
+        <svg viewBox="0 0 500 600" class="pot-svg">
+          <defs>
+            <linearGradient id="liquidGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#fcd34d" />
+              <stop offset="100%" stop-color="#ea580c" />
+            </linearGradient>
+            <linearGradient id="metalGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#cbd5e1" />
+              <stop offset="20%" stop-color="#f8fafc" />
+              <stop offset="80%" stop-color="#94a3b8" />
+              <stop offset="100%" stop-color="#64748b" />
+            </linearGradient>
+            <linearGradient id="thermosGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#3b82f6" />
+              <stop offset="20%" stop-color="#60a5fa" />
+              <stop offset="80%" stop-color="#2563eb" />
+              <stop offset="100%" stop-color="#1d4ed8" />
+            </linearGradient>
+          </defs>
+
+          <!-- Heat Arrows -->
+          <g class="heat-arrow">
+            <path class="arrow-l" d="M 100 350 Q 70 330 40 340" />
+            <path class="arrow-l delay-1" d="M 100 420 Q 70 400 40 410" />
+            <path class="arrow-r" d="M 400 350 Q 430 330 460 340" />
+            <path class="arrow-r delay-1" d="M 400 420 Q 430 400 460 410" />
+            <path class="arrow-l delay-2" d="M 110 480 Q 80 460 50 470" />
+            <path class="arrow-r delay-2" d="M 390 480 Q 420 460 450 470" />
+          </g>
+
+          <!-- Back of the pot (Inside view) -->
+          <ellipse cx="250" cy="250" rx="130" ry="20" fill="#1e293b" stroke="#94a3b8" stroke-width="3" />
+          <path d="M 120 250 L 120 500 A 130 20 0 0 0 380 500 L 380 250 A 130 20 0 0 1 120 250 Z" fill="#334155" />
+
+          <!-- The Liquid System -->
+          <g class="fluid-group">
+            <path class="fluid has-tooltip" data-tooltip="<b>النظام (System):</b> جزء معين من الكون نهتم بدراسته" d="M 124 265 L 124 490 A 126 15 0 0 0 376 490 L 376 265 Z" fill="url(#liquidGrad)" />
+            <ellipse cx="250" cy="265" rx="126" ry="15" fill="#fcd34d" class="fluid-top has-tooltip" data-tooltip="<b>النظام (System):</b> جزء معين من الكون نهتم بدراسته" />
+            
+            <g class="bubbles">
+              <circle cx="200" cy="460" r="9" class="bubble b1" />
+              <circle cx="260" cy="470" r="11" class="bubble b2" />
+              <circle cx="310" cy="450" r="8" class="bubble b3" />
+              <circle cx="170" cy="430" r="7" class="bubble b4" />
+              <circle cx="330" cy="440" r="10" class="bubble b5" />
+              <circle cx="230" cy="400" r="8" class="bubble b1" />
+              <circle cx="280" cy="380" r="6" class="bubble b3" />
+            </g>
+          </g>
+
+          <!-- Front interactive boundaries -->
+          <g id="pot-interactive" class="has-tooltip interactive-hover" data-tooltip="<b>الحدود (Boundaries):</b> قد تكون حقيقية أو تخيلية">
+            <!-- Pot Handles -->
+            <path class="pot-handle" d="M 120 300 Q 70 300 70 340 Q 70 380 120 380" fill="none" stroke="#94a3b8" stroke-width="16" stroke-linecap="round" />
+            <path class="pot-handle" d="M 380 300 Q 430 300 430 340 Q 430 380 380 380" fill="none" stroke="#94a3b8" stroke-width="16" stroke-linecap="round" />
+
+            <!-- Metal Front Wall -->
+            <path class="metal-front" d="M 120 250 A 130 20 0 0 0 380 250 L 380 500 A 130 20 0 0 1 120 500 Z" fill="url(#metalGrad)" stroke="#475569" stroke-width="4" />
+            <ellipse class="metal-front" cx="250" cy="250" rx="130" ry="20" fill="none" stroke="#64748b" stroke-width="6" />
+
+            <!-- Thermos Front Wall -->
+            <path class="thermos-front" d="M 110 240 A 140 25 0 0 0 390 240 L 390 510 A 140 25 0 0 1 110 510 Z" fill="url(#thermosGrad)" stroke="#1e3a8a" stroke-width="6" opacity="0" />
+            <ellipse class="thermos-front" cx="250" cy="240" rx="140" ry="25" fill="none" stroke="#1d4ed8" stroke-width="8" opacity="0" />
+
+            <!-- Lid -->
+            <g class="pot-lid">
+              <!-- Metal Lid -->
+              <ellipse class="lid-metal" cx="250" cy="242" rx="135" ry="22" fill="url(#metalGrad)" stroke="#475569" stroke-width="4" />
+              <path class="lid-metal" d="M 200 240 Q 250 210 300 240 L 300 245 L 200 245 Z" fill="#64748b" />
+              <path class="lid-metal" d="M 220 230 L 220 205 L 280 205 L 280 230" fill="none" stroke="#1e293b" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" />
+              
+              <!-- Thermos Lid -->
+              <ellipse class="lid-thermos" cx="250" cy="232" rx="145" ry="26" fill="url(#thermosGrad)" stroke="#1e3a8a" stroke-width="6" opacity="0" />
+              <rect class="lid-thermos" x="210" y="190" width="80" height="35" rx="8" fill="#1e3a8a" opacity="0" />
+            </g>
+          </g>
+
+          <!-- Steam -->
+          <g class="steam-group">
+            <path class="steam" d="M 220 240 Q 240 160 210 80 T 230 10" fill="none" stroke="rgba(203, 213, 225, 0.7)" stroke-width="14" stroke-linecap="round" />
+            <path class="steam delay-1" d="M 280 240 Q 260 160 290 80 T 270 10" fill="none" stroke="rgba(203, 213, 225, 0.7)" stroke-width="18" stroke-linecap="round" />
+            <path class="steam delay-2" d="M 250 230 Q 270 150 240 70 T 260 0" fill="none" stroke="rgba(203, 213, 225, 0.7)" stroke-width="12" stroke-linecap="round" />
+          </g>
+
+          <!-- Transparent Center Hitbox for "The System" -->
+          <ellipse class="has-tooltip system-hitbox" data-tooltip="<b>النظام (System):</b> جزء معين من الكون نهتم بدراسته" cx="250" cy="370" rx="100" ry="100" fill="transparent" style="cursor: help;" />
+        </svg>
+
+        <div class="xray-instruction">انقر مع الاستمرار على الوعاء للرؤية بالداخل</div>
+      </div>
+
+      <div class="side-panel">
+        <h2>أنواع الأنظمة الثرموداينميكية</h2>
+        
+        <div class="controls">
+          <button id="btn-open" class="active">النظام المفتوح</button>
+          <button id="btn-closed">النظام المغلق</button>
+          <button id="btn-isolated">النظام المعزول</button>
+        </div>
+
+        <div class="description-box" id="system-desc">
+          <b>النظام المفتوح:</b> يسمح بتبادل مادة النظام وطاقته مع المحيط.
+        </div>
+
+        <div class="data-panel">
+          <div class="readout-item">
+            <span class="label">الحجم (V)</span>
+            <span class="value"><span id="val-v">100.00</span> mL</span>
+          </div>
+          <div class="readout-item">
+            <span class="label">درجة الحرارة (T)</span>
+            <span class="value"><span id="val-t">90.00</span> °C</span>
+          </div>
+          <div class="readout-item">
+            <span class="label">الضغط (P)</span>
+            <span class="value"><span id="val-p">1.00</span> atm</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="tooltip" id="tooltip"></div>
+
+  <script>
+    // Routing Logic
+    function navigateTo(viewId) {
+      const views = ['view-dashboard', 'view-chapter-1', 'view-simulation-1'];
+      views.forEach(id => {
+        document.getElementById(id).style.display = 'none';
+      });
+      const target = document.getElementById(viewId);
+      if (target) target.style.display = 'block';
+      window.scrollTo(0, 0);
+    }
+
+    // Init Routing
+    document.addEventListener("DOMContentLoaded", () => {
+      navigateTo('view-dashboard');
+    });
+
+    // Tooltip Logic
+    const tooltip = document.getElementById('tooltip');
+    document.addEventListener('mousemove', (e) => {
+      const target = e.target.closest('.has-tooltip');
+      if (target) {
+        tooltip.innerHTML = target.getAttribute('data-tooltip');
+        tooltip.style.opacity = 1;
+        tooltip.style.transform = `translate(${e.clientX + 15}px, ${e.clientY + 15}px)`;
+      } else {
+        tooltip.style.opacity = 0;
+      }
+    });
+
+    // X-Ray Feature Implementation
+    const potContainer = document.getElementById('pot-container');
+    const potInteractive = document.getElementById('pot-interactive');
+    const systemHitbox = document.querySelector('.system-hitbox');
+
+    function activateXRay(e) {
+      if (e.type === 'mousedown' && e.button !== 0) return;
+      potContainer.classList.add('xray-active');
+    }
+    
+    function deactivateXRay() {
+      potContainer.classList.remove('xray-active');
+    }
+
+    potInteractive.addEventListener('mousedown', activateXRay);
+    potInteractive.addEventListener('touchstart', (e) => { activateXRay(e); }, {passive: true});
+    if (systemHitbox) {
+      systemHitbox.addEventListener('mousedown', activateXRay);
+      systemHitbox.addEventListener('touchstart', (e) => { activateXRay(e); }, {passive: true});
+    }
+    document.addEventListener('mouseup', deactivateXRay);
+    document.addEventListener('touchend', deactivateXRay);
+
+    // State Management
+    const btnOpen = document.getElementById('btn-open');
+    const btnClosed = document.getElementById('btn-closed');
+    const btnIsolated = document.getElementById('btn-isolated');
+    const descBox = document.getElementById('system-desc');
+    
+    const valV = document.getElementById('val-v');
+    const valT = document.getElementById('val-t');
+    const valP = document.getElementById('val-p');
+
+    let currentState = 'open';
+    let v = 100.00, t = 90.00, p = 1.00;
+    let simInterval;
+
+    const descriptions = {
+      open: "<b>النظام المفتوح:</b> يسمح بتبادل مادة النظام وطاقته مع المحيط.",
+      closed: "<b>النظام المغلق:</b> يسمح بتبادل الطاقة فقط ولا يسمح بتغيير كمية مادة النظام.",
+      isolated: "<b>النظام المعزول:</b> لا يسمح بتبادل المادة والطاقة مع المحيط."
+    };
+
+    function startSimulation(state) {
+      if (simInterval) clearInterval(simInterval);
+      
+      v = 100.00; 
+      t = 90.00; 
+      p = 1.00;
+      updateDisplays();
+
+      simInterval = setInterval(() => {
+        if (state === 'open') {
+          // Open System: V decreases (mass loss), T decreases (heat loss), P locked at 1.00 atm
+          v = Math.max(0, v - 0.1);
+          t = Math.max(25, t - 0.15);
+          p = 1.00;
+        } else if (state === 'closed') {
+          // Closed System: V locked, T decreases, P decreases (Vacuum effect)
+          v = 100.00;
+          if (t > 25) {
+            t = Math.max(25, t - 0.15);
+            p = Math.max(0.50, p - 0.01);
+          }
+        } else if (state === 'isolated') {
+          // Isolated System: V, T, P all locked and constant
+          v = 100.00;
+          t = 90.00;
+          p = 1.00;
+        }
+        updateDisplays();
+      }, 1000);
+    }
+
+    function updateState(newState) {
+      currentState = newState;
+      potContainer.className = `simulation-area has-tooltip state-${newState}`;
+      
+      [btnOpen, btnClosed, btnIsolated].forEach(btn => btn.classList.remove('active'));
+      document.getElementById(`btn-${newState}`).classList.add('active');
+      descBox.innerHTML = descriptions[newState];
+
+      startSimulation(newState);
+    }
+
+    btnOpen.addEventListener('click', () => updateState('open'));
+    btnClosed.addEventListener('click', () => updateState('closed'));
+    btnIsolated.addEventListener('click', () => updateState('isolated'));
+
+    function updateDisplays() {
+      valV.textContent = v.toFixed(2);
+      valT.textContent = t.toFixed(2);
+      valP.textContent = p.toFixed(2);
+    }
+
+    // Initialize first state
+    startSimulation(currentState);
+  </script>
+</body>
+</html>

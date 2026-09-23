@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>العمليات التلقائية</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        background-color: #ffffff; /* Pure white background */
+        background-image: 
+            linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+        background-size: 20px 20px;
+        color: #333; /* Dark text for readability */
+        font-family: 'Tajawal', sans-serif;
+        overflow: hidden; /* Prevent scrollbars during animations */
+    }
+
+    /* Standardized Back Button */
+    .back-btn {
+        position: absolute !important;
+        top: 20px !important;
+        left: 20px !important;
+        background-color: #ffffff !important;
+        color: #5a6a85 !important; /* Dark gray/blueish text */
+        border: 2px solid #e4e9f2 !important;
+        border-radius: 12px !important;
+        padding: 10px 24px !important;
+        font-family: 'Tajawal', sans-serif !important;
+        font-size: 16px !important;
+        font-weight: bold !important;
+        cursor: pointer !important;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+        text-decoration: none !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        z-index: 200 !important;
+    }
+
+    /* Hover/Float Effect */
+    .back-btn:hover {
+        color: #00b4d8 !important; /* Bright blue text */
+        border-color: #00b4d8 !important; /* Bright blue border */
+        transform: translateY(-4px) !important; /* Floating effect */
+        box-shadow: 0 8px 20px rgba(0, 180, 216, 0.2) !important;
+    }
+    /* Main Layout Container */
+    .experiment-container {
+        display: flex;
+        justify-content: space-around; /* Better spacing between columns */
+        align-items: center;
+        max-width: 1300px;
+        margin: 40px auto 0;
+        padding: 20px;
+        direction: rtl;
+        height: calc(100vh - 120px);
+    }
+
+    /* Left Column for Data Panels */
+    .data-panels-column {
+        display: flex;
+        flex-direction: column;
+        gap: 40px; /* Space between dashboard and microscope */
+        width: 300px;
+    }
+
+    /* Center Lab Area */
+    .lab-area-center {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        flex-grow: 1;
+    }
+
+    /* Dashboard Styling */
+    .spont-dashboard {
+        background: #1e293b;
+        border-radius: 16px; padding: 25px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2); border: 1px solid #334155; color: #f8fafc;
+    }
+    .dash-header { font-size: 18px; font-weight: bold; color: #38bdf8; border-bottom: 2px dashed #475569; padding-bottom: 10px; margin-bottom: 20px; text-align: center; }
+    .metric-group { margin-bottom: 20px; }
+    .metric-label { font-size: 14px; color: #94a3b8; display: block; margin-bottom: 8px; }
+    .metric-value { font-size: 18px; font-weight: bold; }
+    .status-waiting { color: #cbd5e1; }
+    .status-spontaneous { color: #4ade80; text-shadow: 0 0 10px rgba(74,222,128,0.5); }
+    .status-nonspontaneous { color: #f87171; text-shadow: 0 0 10px rgba(248,113,113,0.5); }
+
+    .reverse-btn {
+        width: 100%; padding: 12px; margin-top: 15px; border-radius: 8px; border: none;
+        background: #ef4444; color: white; font-weight: bold; font-family: 'Tajawal', sans-serif;
+        cursor: pointer; transition: 0.3s;
+    }
+    .reverse-btn:hover { background: #dc2626; transform: scale(1.05); }
+
+    /* Microscope Styling */
+    .microscope-view { text-align: center; }
+    .micro-header { font-size: 18px; font-weight: bold; color: #334155; margin-bottom: 15px; }
+    .micro-screen {
+        width: 240px; height: 240px; background: #ffffff; margin: 0 auto;
+        border-radius: 50%; border: 12px solid #cbd5e1; box-shadow: inset 0 0 20px rgba(0,0,0,0.1), 0 10px 30px rgba(0,0,0,0.1);
+        position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;
+    }
+    .micro-placeholder { color: #94a3b8; font-size: 14px; padding: 20px; }
+
+    /* Large Glass Mug Design */
+    .coffee-cup-container { position: relative; margin-top: 80px; margin-bottom: 40px; }
+    /* Realistic Cylindrical Glass Mug */
+    .large-glass-mug {
+        width: 180px; 
+        height: 200px; 
+        background: rgba(255, 255, 255, 0.15); 
+        border-radius: 8px 8px 25px 25px; /* Softer, cylindrical bottom */
+        position: relative; 
+        z-index: 5;
+        border: 3px solid rgba(148, 163, 184, 0.6); 
+        border-top: none; /* Open top */
+        box-shadow: 
+            inset -15px 0 30px rgba(0,0,0,0.1), /* Left inner shadow for cylinder effect */
+            inset 15px 0 30px rgba(255,255,255,0.4), /* Right inner highlight */
+            0 15px 25px rgba(0,0,0,0.15); /* Drop shadow on table */
+        overflow: visible; /* CRITICAL: Allow handle to be visible outside the mug */
+        display: flex; 
+        align-items: flex-end;
+    }
+
+    /* The Coffee Liquid Inside */
+    .coffee-liquid {
+        width: 100%; 
+        height: 75%; 
+        background: linear-gradient(90deg, #2a160c 0%, #4a2c11 50%, #1f0f04 100%); /* Cylindrical liquid shading */
+        border-radius: 0 0 22px 22px;
+        box-shadow: inset 0 15px 20px rgba(0,0,0,0.8);
+        position: relative;
+    }
+
+    /* The Coffee Surface (Top Edge of Liquid) */
+    .coffee-liquid::before {
+        content: '';
+        position: absolute;
+        top: -10px; /* Sit on top of the liquid */
+        left: 0;
+        width: 100%;
+        height: 20px; /* Oval shape to simulate perspective */
+        background: #5d3a1f; /* Lighter surface color */
+        border-radius: 50%;
+        box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+    }
+
+    /* Seamless, Elegant Glass Mug Handle */
+    .mug-handle { 
+        position: absolute !important;
+        left: 100% !important; 
+        margin-left: -2px !important; /* Seamless merge with the cup body */
+        
+        /* PROPORTIONAL SIZING: Scales naturally with the cup */
+        height: 65% !important; /* Covers a realistic portion of the cup's height */
+        width: 60px !important; /* Wide enough to look like a comfortable grip */
+        top: 15% !important; /* Starts naturally below the top rim */
+        
+        /* Seamless Border Matching */
+        border: 2px solid #cbd5e1 !important; 
+        border-left: none !important; 
+        
+        /* Perfect sweeping curves */
+        border-top-right-radius: 80px !important;
+        border-bottom-right-radius: 80px !important;
+        
+        /* Transparent glass integration */
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        backdrop-filter: blur(2px) !important;
+        
+        /* 3D Glass volume */
+        box-shadow: 
+            inset -4px 0 6px rgba(255, 255, 255, 0.6),
+            2px 4px 6px rgba(0, 0, 0, 0.05) !important;
+            
+        z-index: -1 !important; 
+    }
+    .cup-shadow {
+        width: 200px; height: 20px; 
+        background: radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0) 70%);
+        border-radius: 50%; margin: 10px auto 0;
+    }
+
+    /* Animated Steam - Enhanced for White Background */
+    .steam-container {
+        position: absolute; top: -120px; left: 50%; transform: translateX(-50%);
+        width: 140px; height: 120px; z-index: 2; pointer-events: none;
+    }
+    .steam-wave {
+        position: absolute; bottom: 0; left: 35%; width: 45px; height: 45px;
+        background: rgba(148, 163, 184, 0.7); /* Slate gray color for high contrast */
+        border-radius: 50%; filter: blur(12px); opacity: 0;
+        animation: rise 3s infinite ease-in-out; animation-delay: var(--d);
+    }
+    @keyframes rise {
+        0% { transform: translateY(0) scale(1) translateX(0); opacity: 0; }
+        20% { opacity: 0.8; } /* Highly visible when rising */
+        60% { opacity: 0.5; transform: translateY(-70px) scale(2) translateX(-20px); }
+        100% { transform: translateY(-130px) scale(3) translateX(-40px); opacity: 0; }
+    }
+
+    /* Container for Plate and Cubes */
+    .sugar-station {
+        position: absolute;
+        bottom: 50px; /* Aligned with cup */
+        left: -220px; 
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        width: 200px; 
+        height: 100px;
+    }
+
+    /* Ultra-Realistic Glossy Ceramic Plate */
+    .sugar-plate-base {
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 220px;
+        height: 75px;
+        border-radius: 50%;
+        /* Bright center, naturally darkening towards the edges */
+        background: radial-gradient(ellipse at 50% 30%, #ffffff 0%, #f1f5f9 50%, #94a3b8 100%) !important;
+        border: none !important; /* CRITICAL: No borders for realism */
+        
+        /* Complex Lighting and Shadows */
+        box-shadow: 
+            0 20px 25px rgba(0,0,0,0.25), /* Heavy table drop shadow */
+            inset 0 -15px 20px rgba(71,85,105,0.5), /* Deep bowl shadow */
+            inset 0 6px 8px rgba(255,255,255,1), /* Intense top rim glossy highlight */
+            inset 0 -2px 4px rgba(255,255,255,0.6), /* Bottom lip reflection */
+            0 4px 6px rgba(148,163,184,0.4) !important; /* Outer physical edge */
+        z-index: 1;
+    }
+
+    /* Crisp 3D Sugar Cubes with Beveled Edges */
+    .sugar-cube {
+        width: 36px; 
+        height: 36px; 
+        position: absolute;
+        cursor: grab;
+        border-radius: 2px; /* Sharper corners for sugar crystals */
+        
+        /* Warm ivory base */
+        background-color: #fdfbf2 !important;
+        background-image: linear-gradient(135deg, #ffffff 0%, #fdfbf2 50%, #e8e3cc 100%) !important;
+        
+        /* 3D BEVEL: Light hits top/left, shadows on bottom/right */
+        border-top: 2px solid #ffffff !important;
+        border-left: 2px solid #ffffff !important;
+        border-right: 2px solid #d5cdae !important;
+        border-bottom: 2px solid #c2b893 !important;
+        
+        /* Strong drop shadow to completely separate overlapping cubes */
+        box-shadow: 
+            -3px 4px 5px rgba(0,0,0,0.2), 
+            inset -2px -2px 5px rgba(0,0,0,0.05) !important;
+            
+        transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.2s ease;
+    }
+
+    .sugar-cube:active { 
+        cursor: grabbing; 
+        transform: scale(1.08) translateY(-5px) !important; 
+        box-shadow: -6px 10px 15px rgba(0,0,0,0.25) !important;
+        z-index: 100 !important; 
+    }
+
+    /* Mathematically Centered 3-2-1 Pyramid */
+    .sugar-cubes-wrapper {
+        position: absolute;
+        bottom: 18px; /* Sits perfectly in the CSS plate's center */
+        left: 50%;
+        transform: translateX(-50%);
+        width: 102px; /* 34px * 3 */
+        height: 98px; /* Adjusted for stacking heights */
+        z-index: 2;
+    }
+
+    /* Tightly packed layout to enhance solidity */
+    .sugar-cube:nth-child(1) { bottom: 0px; left: 0px; z-index: 2; }
+    .sugar-cube:nth-child(2) { bottom: 0px; left: 34px; z-index: 2; }
+    .sugar-cube:nth-child(3) { bottom: 0px; left: 68px; z-index: 2; }
+    .sugar-cube:nth-child(4) { bottom: 32px; left: 17px; z-index: 3; }
+    .sugar-cube:nth-child(5) { bottom: 32px; left: 51px; z-index: 3; }
+    .sugar-cube:nth-child(6) { bottom: 64px; left: 34px; z-index: 4; }
+
+    .instruction-text {
+        font-weight: bold; color: #1e293b; font-size: 22px;
+        background: #f8fafc; padding: 12px 24px; border-radius: 30px; 
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 2px solid #e2e8f0;
+    }
+    /* Microscopic Particles */
+    .micro-particle {
+        width: 8px;
+        height: 8px;
+        background-color: #fdfdfd;
+        border: 1px solid #cbd5e1;
+        position: absolute;
+        border-radius: 2px; /* Slight cube shape */
+        transition: all 2.5s cubic-bezier(0.25, 1, 0.5, 1); /* Smooth random scattering */
+        opacity: 0;
+    }
+
+    /* Shake Animation for Non-Spontaneous Error */
+    @keyframes shakeError {
+        0%, 100% { transform: translateX(0); }
+        20%, 60% { transform: translateX(-10px); }
+        40%, 80% { transform: translateX(10px); }
+    }
+    .shake-effect {
+        animation: shakeError 0.5s ease-in-out;
+    }
+    /* Reset Experiment Button */
+    .reset-button {
+        position: fixed;
+        bottom: 30px;
+        left: 30px; /* Moved to the opposite side (left) */
+        right: auto; /* Ensure right positioning is cleared */
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background-color: #ffffff;
+        color: #0f172a;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        transition: all 0.2s ease;
+        z-index: 1000;
+    }
+
+    .reset-button:hover {
+        background-color: #f8fafc;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        color: #0284c7; /* Match the primary UI blue */
+    }
+
+    .reset-button:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    /* Sinking and Melting Animation */
+    @keyframes sinkAndMelt {
+        0% { transform: translateY(0) scale(1); opacity: 1; }
+        50% { transform: translateY(40px) scale(0.6); opacity: 0.8; }
+        100% { transform: translateY(80px) scale(0.1); opacity: 0; }
+    }
+
+    .sinking-cube {
+        animation: sinkAndMelt 1.5s ease-in forwards !important;
+        pointer-events: none !important; /* Prevent interaction while melting */
+        z-index: 10 !important; /* Ensure it stays inside/behind front glass if applicable */
+    }
+  </style>
+</head>
+<body>
+    <a href="#" onclick="window.history.back(); return false;" class="back-btn">
+      <span style="font-size: 20px;">&rarr;</span> العودة للفصل
+    </a>
+    <div class="experiment-container">
+        <!-- Left Side: Data Panels (Stacked) -->
+        <div class="data-panels-column">
+            <!-- 1. Digital Dashboard -->
+            <div class="spont-dashboard">
+                <div class="dash-header">مراقبة النظام الثرموديناميكي</div>
+                <div class="metric-group">
+                    <span class="metric-label">حالة النظام:</span>
+                    <span class="metric-value" id="systemState">صلب (منتظم)</span>
+                </div>
+                <div class="metric-group">
+                    <span class="metric-label">نوع العملية:</span>
+                    <span class="metric-value status-waiting" id="processStatus">في انتظار التفاعل...</span>
+                </div>
+                <button id="reverseBtn" class="reverse-btn" style="display: none;">إعادة تجميع السكر (عكس العملية)</button>
+            </div>
+
+            <!-- 2. Microscopic Lens -->
+            <div class="microscope-view">
+                <div class="micro-header">العدسة المجهرية (الجزيئات)</div>
+                <div id="microscopeScreen" class="micro-screen">
+                    <div class="micro-placeholder">اسحب السكر لتبدأ المراقبة</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right/Center Side: Physical Lab Area -->
+        <div class="lab-area-center">
+            <div class="coffee-cup-container">
+                <!-- Animated Steam -->
+                <div class="steam-container">
+                    <div class="steam-wave" style="--d: 0s;"></div>
+                    <div class="steam-wave" style="--d: 0.6s;"></div>
+                    <div class="steam-wave" style="--d: 1.2s;"></div>
+                </div>
+                
+                <!-- Large Transparent Mug -->
+                <div id="coffeeCup" class="large-glass-mug">
+                    <div class="mug-handle"></div>
+                    <div class="coffee-liquid"></div>
+                </div>
+                
+                <!-- Centered Shadow -->
+                <div class="cup-shadow"></div>
+                
+                <!-- Organized Sugar Cubes on a Plate -->
+                <div class="sugar-station">
+                    <div class="sugar-plate-base"></div>
+                    <div class="sugar-cubes-wrapper">
+                        <div class="sugar-cube"></div>
+                        <div class="sugar-cube"></div>
+                        <div class="sugar-cube"></div>
+                        <div class="sugar-cube"></div>
+                        <div class="sugar-cube"></div>
+                        <div class="sugar-cube"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="instruction-text">اسحب قطعة سكر وأسقطها في القهوة</div>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const sugarCubes = document.querySelectorAll('.sugar-cube');
+    const coffeeCupContainer = document.querySelector('.coffee-cup-container');
+    const systemState = document.getElementById('systemState');
+    const processStatus = document.getElementById('processStatus');
+    const reverseBtn = document.getElementById('reverseBtn');
+    const microscopeScreen = document.getElementById('microscopeScreen');
+    const microPlaceholder = document.querySelector('.micro-placeholder');
+    
+    let isDissolved = false;
+
+    // --- CUSTOM PHYSICAL DRAG & DROP WITH CLONING ---
+    let isDragging = false;
+    let activeCube = null; // The original cube
+    let cloneCube = null;  // The clone being dragged
+    let offsetX = 0, offsetY = 0;
+
+    sugarCubes.forEach(cube => {
+        cube.addEventListener("mousedown", dragStart);
+        cube.addEventListener("touchstart", dragStart, { passive: false });
+    });
+    
+    document.addEventListener("mousemove", drag);
+    document.addEventListener("touchmove", drag, { passive: false });
+    document.addEventListener("mouseup", dragEnd);
+    document.addEventListener("touchend", dragEnd);
+
+    function dragStart(e) {
+        if (isDissolved) return;
+        let target = e.target;
+        if (!target.classList.contains('sugar-cube')) return;
+
+        isDragging = true;
+        activeCube = target;
+        
+        // 1. Get exact position of the original cube
+        const rect = activeCube.getBoundingClientRect();
+        
+        // 2. Calculate offset of mouse/touch relative to the cube's top-left
+        let clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+        let clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+        offsetX = clientX - rect.left;
+        offsetY = clientY - rect.top;
+
+        // 3. Create a Clone to drag
+        cloneCube = activeCube.cloneNode(true);
+        cloneCube.style.position = 'absolute';
+        cloneCube.style.margin = '0'; // Remove overlapping margins from original css
+        cloneCube.style.zIndex = '9999';
+        cloneCube.style.pointerEvents = 'none'; // CRITICAL: So it doesn't block drop events
+        cloneCube.style.cursor = 'grabbing';
+        cloneCube.style.transition = 'none'; // No transition while dragging
+        cloneCube.style.transform = 'scale(1.05)'; // Visual feedback
+        
+        // Append clone to body to avoid container constraints
+        document.body.appendChild(cloneCube); 
+        
+        // Position clone exactly under cursor
+        updateClonePosition(clientX, clientY);
+
+        // 4. Hide the original cube (but keep its space in the flex container!)
+        activeCube.style.opacity = '0';
+    }
+
+    function updateClonePosition(clientX, clientY) {
+        if (!cloneCube) return;
+        // Subtract offset to keep cursor at the exact grab point
+        cloneCube.style.left = (clientX - offsetX) + 'px';
+        cloneCube.style.top = (clientY - offsetY) + 'px';
+    }
+
+    function drag(e) {
+        if (!isDragging || !cloneCube) return;
+        e.preventDefault(); // Prevent scrolling on touch
+        
+        let clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+        let clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+        
+        updateClonePosition(clientX, clientY);
+    }
+
+    function dragEnd(e) {
+        if (!isDragging || !cloneCube || !activeCube) return;
+        isDragging = false;
+
+        const cloneRect = cloneCube.getBoundingClientRect();
+        const cup = document.getElementById('coffeeCup');
+        const cupRect = cup.getBoundingClientRect();
+
+        // Check if the center of the dragged clone is over the cup
+        const cloneCenterX = cloneRect.left + (cloneRect.width / 2);
+        const cloneCenterY = cloneRect.top + (cloneRect.height / 2);
+        
+        // Extended Drop Zone: Any height above the mug, dropping down to liquid level
+        const dropLimitY = cupRect.top + (cupRect.height * 0.3);
+        
+        const isOverCupOpening = (
+            cloneCenterX > cupRect.left && 
+            cloneCenterX < cupRect.right && 
+            cloneCenterY <= dropLimitY
+        );
+
+        if (isOverCupOpening) {
+            isDissolved = true; // Prevent further interactions during melting
+            const currentClone = cloneCube;
+            const currentActive = activeCube;
+            
+            // Phase 1: Gravity Free-Fall
+            const targetX = cupRect.left + (cupRect.width / 2) - (cloneRect.width / 2);
+            const targetY = cupRect.top + 20; // Hit the liquid surface
+            
+            // Force a reflow so the transition applies from current cursor position
+            void currentClone.offsetWidth;
+            currentClone.style.transition = 'top 0.4s ease-in, left 0.2s ease';
+            currentClone.style.left = targetX + 'px';
+            currentClone.style.top = targetY + 'px';
+            
+            // Phase 2: Sinking & Melting (starts when hitting liquid)
+            setTimeout(() => {
+                currentClone.style.transition = 'none'; // Prevent conflict with CSS keyframes
+                currentClone.classList.add('sinking-cube');
+            }, 400);
+            
+            // Phase 3: State Update (400ms fall + 1500ms melt = 1900ms)
+            setTimeout(() => {
+                currentClone.remove();
+                triggerDissolve(currentActive);
+            }, 1900);
+        } else {
+            // Snap back visually: just remove the clone and show the original
+            cloneCube.remove();
+            activeCube.style.opacity = '1';
+        }
+        
+        activeCube = null;
+        cloneCube = null;
+    }
+
+    // Update triggerDissolve to hide ONLY the dropped cube
+    function triggerDissolve(cubeElement) {
+        cubeElement.style.display = 'none';
+        isDissolved = true;
+
+        // Update Dashboard
+        systemState.innerText = 'محلول (زيادة العشوائية)';
+        processStatus.innerText = 'تلقائية (Spontaneous)';
+        processStatus.className = 'metric-value status-spontaneous';
+        document.querySelector('.instruction-text').style.display = 'none';
+        
+        // Show Reverse Button
+        reverseBtn.style.display = 'block';
+
+        // Trigger Microscopic View
+        triggerMicroscopeEffect();
+    }
+
+    // --- MICROSCOPIC VIEW LOGIC ---
+    function triggerMicroscopeEffect() {
+        if (microPlaceholder) microPlaceholder.style.display = 'none';
+        const numParticles = 30;
+        const particles = [];
+        
+        for (let i = 0; i < numParticles; i++) {
+            const p = document.createElement('div');
+            p.classList.add('micro-particle');
+            p.style.left = '50%';
+            p.style.top = '50%';
+            p.style.opacity = '1';
+            microscopeScreen.appendChild(p);
+            particles.push(p);
+        }
+
+        setTimeout(() => {
+            particles.forEach(p => {
+                const randomX = Math.floor(Math.random() * 80) + 10;
+                const randomY = Math.floor(Math.random() * 80) + 10;
+                const randomRotate = Math.floor(Math.random() * 360);
+                
+                p.style.left = `${randomX}%`;
+                p.style.top = `${randomY}%`;
+                p.style.transform = `rotate(${randomRotate}deg)`;
+            });
+        }, 100);
+    }
+
+    // --- REVERSE BUTTON LOGIC ---
+    reverseBtn.addEventListener('click', () => {
+        reverseBtn.classList.remove('shake-effect');
+        void reverseBtn.offsetWidth; 
+        reverseBtn.classList.add('shake-effect');
+
+        processStatus.innerHTML = `غير تلقائية (Non-Spontaneous)<br><span style="font-size:12px; color:#f8fafc; font-weight:normal; margin-top:5px; display:block;">الاستنتاج: السكر المذاب لا يتجمع تلقائياً كما في شكله الابتدائي</span>`;
+        processStatus.className = 'metric-value status-nonspontaneous';
+    });
+});
+</script>
+<button id="reset-experiment-btn" class="reset-button" onclick="location.reload()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+    إعادة التجربة
+</button>
+</body>
+</html>

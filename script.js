@@ -106,7 +106,7 @@ interactiveCards.forEach(card => {
             setTimeout(() => {
                 // Execute actual routing logic
                 if (targetUrl === '/chemistry') {
-                    window.location.href = './chemistry-experiments-demo-main/chemistry-experiments-demo-main/index.html';
+                    window.location.href = './chemistry-experiments/index.html';
                 } else if (targetUrl === '/physics') {
                     window.location.href = './Raqeem-demo-main/Raqeem-demo-main/index.html';
                 }

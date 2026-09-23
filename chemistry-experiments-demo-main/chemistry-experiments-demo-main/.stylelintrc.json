@@ -1,8 +1,0 @@
-{
-  "extends": "stylelint-config-standard",
-  "rules": {
-    "no-descending-specificity": null,
-    "declaration-block-no-duplicate-properties": null,
-    "selector-pseudo-element-no-unknown": null
-  }
-}

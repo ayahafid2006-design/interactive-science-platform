@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>التفاعل الباعث للحرارة - الألعاب النارية</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; padding: 0; overflow: hidden; background: #000; font-family: 'Tajawal', sans-serif; }
+    /* Standardized Back Button */
+    .back-btn {
+        position: absolute !important;
+        top: 20px !important;
+        left: 20px !important;
+        background-color: #ffffff !important;
+        color: #5a6a85 !important; /* Dark gray/blueish text */
+        border: 2px solid #e4e9f2 !important;
+        border-radius: 12px !important;
+        padding: 10px 24px !important;
+        font-family: 'Tajawal', sans-serif !important;
+        font-size: 16px !important;
+        font-weight: bold !important;
+        cursor: pointer !important;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+        text-decoration: none !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        z-index: 200 !important;
+    }
+
+    /* Hover/Float Effect */
+    .back-btn:hover {
+        color: #00b4d8 !important; /* Bright blue text */
+        border-color: #00b4d8 !important; /* Bright blue border */
+        transform: translateY(-4px) !important; /* Floating effect */
+        box-shadow: 0 8px 20px rgba(0, 180, 216, 0.2) !important;
+    }
+    .floating-heat-text {
+        position: absolute;
+        color: #ff4757;
+        font-weight: bold;
+        font-size: 24px;
+        text-shadow: 0 0 10px #ff4757, 0 0 20px #fff;
+        pointer-events: none;
+        z-index: 15;
+        animation: heatRadiate 2s ease-out forwards;
+    }
+    @keyframes heatRadiate {
+        0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+        100% { transform: translate(-50%, -150%) scale(1.5); opacity: 0; }
+    }
+
+    /* Screen edge thermal glowing pulse */
+    @keyframes edgeThermalPulse {
+        0% { box-shadow: inset 0 0 0px rgba(255, 60, 0, 0); }
+        30% { box-shadow: inset 0 0 150px rgba(255, 60, 0, 0.7); }
+        100% { box-shadow: inset 0 0 0px rgba(255, 60, 0, 0); }
+    }
+    .thermal-pulse-overlay {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        pointer-events: none;
+        z-index: 5;
+        animation: edgeThermalPulse 1.2s ease-out;
+    }
+
+    /* Light Lab Theme (Default) */
+    body.lab-light-theme {
+        background-color: #ffffff;
+        background-image: linear-gradient(#e5e7eb 1px, transparent 1px), linear-gradient(90deg, #e5e7eb 1px, transparent 1px);
+        background-size: 20px 20px;
+        transition: background-color 1s ease, background-image 1s ease;
+    }
+
+    /* Dark Lab Theme (After switch is flipped) */
+    body.lab-dark-theme {
+        background-color: #0b0f19;
+        background-image: none;
+        transition: background-color 1s ease;
+    }
+
+    /* Light Switch Container */
+    #lightSwitchContainer {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        z-index: 50;
+        transition: opacity 0.5s ease;
+    }
+
+    #lightSwitchBtn {
+        background: #f1c40f;
+        color: #333;
+        border: none;
+        border-radius: 50%;
+        width: 100px;
+        height: 100px;
+        font-size: 40px;
+        cursor: pointer;
+        box-shadow: 0 0 20px rgba(241, 196, 15, 0.5), inset 0 0 10px rgba(255,255,255,0.8);
+        transition: transform 0.2s, background 0.3s;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0 auto;
+    }
+    #lightSwitchBtn:hover { transform: scale(1.05); }
+
+    #lightSwitchInstruction {
+        margin-top: 20px;
+        font-family: 'Tajawal', sans-serif;
+        font-size: 24px;
+        color: #333;
+        font-weight: bold;
+        background: rgba(255,255,255,0.9);
+        padding: 10px 20px;
+        border-radius: 10px;
+        border: 2px solid #ddd;
+    }
+
+    /* Digital Glass Dashboard Container */
+    #digitalDashboard {
+        position: absolute;
+        top: 80px; 
+        left: -350px; /* Hidden initially, slides in from left */
+        width: 260px;
+        background: rgba(10, 15, 30, 0.6); /* Dark translucent background */
+        backdrop-filter: blur(12px); /* Glassmorphism blur */
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 0 15px 15px 0;
+        box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.8), inset 0 0 15px rgba(0, 150, 255, 0.1);
+        font-family: 'Courier New', Courier, monospace; /* Digital font vibe */
+        color: #fff;
+        padding: 20px;
+        z-index: 90;
+        transition: left 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        direction: ltr; /* LTR for numbers alignment */
+    }
+
+    #digitalDashboard.visible { left: 0; }
+
+    .dash-header {
+        font-family: 'Tajawal', sans-serif;
+        font-weight: bold;
+        font-size: 16px;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.7);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+    }
+
+    .metric-group {
+        margin-bottom: 15px;
+        background: rgba(0, 0, 0, 0.4);
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .metric-label {
+        font-family: 'Tajawal', sans-serif;
+        font-size: 14px;
+        color: #aaa;
+        display: block;
+        margin-bottom: 5px;
+        text-align: right; /* RTL label */
+    }
+
+    /* Neon Glows */
+    .metric-value {
+        font-size: 24px;
+        font-weight: bold;
+        display: block;
+        text-align: right;
+        text-shadow: 0 0 10px currentColor;
+        transition: color 0.3s, text-shadow 0.3s;
+    }
+
+    .temp-glow { color: #ff3366; } /* Neon Red/Pink */
+    .enthalpy-glow { color: #00e5ff; } /* Neon Cyan */
+
+    /* Screen Update Flash Effect */
+    @keyframes dashboardFlash {
+        0% { background: rgba(255, 255, 255, 0.2); box-shadow: 0 0 20px rgba(255,255,255,0.4); }
+        100% { background: rgba(0, 0, 0, 0.4); box-shadow: none; }
+    }
+    .flash-update { animation: dashboardFlash 0.5s ease-out; }
+
+    .dash-footer-relation {
+        margin-top: 20px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border-top: 1px dashed rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        font-family: 'Tajawal', sans-serif;
+        direction: rtl;
+    }
+    .relation-title {
+        color: #f1c40f;
+        font-weight: bold;
+        font-size: 14px;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+    .relation-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        color: #e0e0e0;
+        margin-bottom: 8px;
+    }
+    .arrow-up { color: #ff3366; font-weight: bold; }
+    .arrow-down { color: #00e5ff; font-weight: bold; }
+  </style>
+</head>
+<body class="lab-light-theme" style="margin: 0; padding: 0; overflow: hidden; font-family: 'Tajawal', sans-serif; direction: rtl;">
+    <!-- Back Button to allow user to return -->
+    <a href="#" onclick="window.history.back(); return false;" class="back-btn"><span style="font-size: 20px;">→</span> العودة للفصل</a>
+
+    <!-- Light Switch UI -->
+    <div id="lightSwitchContainer">
+        <button id="lightSwitchBtn">💡</button>
+        <div id="lightSwitchInstruction">يرجى إطفاء أنوار المختبر أولاً لرؤية الألعاب النارية</div>
+    </div>
+
+    <div id="thermalPulseContainer" style="position: absolute; top:0; left:0; width: 100%; height: 100%; pointer-events: none; z-index: 5;"></div>
+
+    <!-- Digital Glass Dashboard UI -->
+    <div id="digitalDashboard">
+        <div class="dash-header">شاشة المراقبة الحرارية</div>
+        
+        <div class="metric-group" id="tempMetric">
+            <span class="metric-label">حرارة المحيط (T)</span>
+            <span class="metric-value temp-glow" id="dashTempDisplay">25.0 °C</span>
+        </div>
+        
+        <div class="metric-group" id="enthalpyMetric">
+            <span class="metric-label">الإنثالبي (ΔH)</span>
+            <span class="metric-value enthalpy-glow" id="dashEnthalpyDisplay">0.0 kJ</span>
+        </div>
+
+        <div class="dash-footer-relation">
+            <div class="relation-title">استنتاج: تفاعل باعث للحرارة</div>
+            <div class="relation-row">
+                <span>حرارة المحيط (T):</span> 
+                <span class="arrow-up">ترتفع ⬆️</span>
+            </div>
+            <div class="relation-row">
+                <span>إنثالبي النظام (ΔH):</span> 
+                <span class="arrow-down">سالب (&lt; 0) ⬇️</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Canvas for Realistic Fireworks -->
+    <canvas id="fwCanvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; opacity: 0; transition: opacity 1s ease;"></canvas>
+
+    <!-- Start Button (Hidden initially) -->
+    <button id="startBtn" style="display: none; position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); padding: 15px 40px; background: linear-gradient(45deg, #1e90ff, #ff4757); border: none; border-radius: 30px; color: white; font-size: 22px; font-weight: bold; cursor: pointer; z-index: 10; box-shadow: 0 0 20px rgba(255,255,255,0.3);">إطلاق المفرقعات</button>
+
+    <!-- Educational Information Box (Hidden initially) -->
+    <div id="infoBox" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(20, 20, 30, 0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); padding: 30px 40px; border-radius: 15px; border: 2px solid #ff4757; text-align: center; color: white; z-index: 20; opacity: 0; transition: opacity 1.5s ease-in-out; pointer-events: none; box-shadow: 0 0 30px rgba(255, 71, 87, 0.6); max-width: 600px;">
+        <h2 style="color: #ff4757; margin-top: 0; font-size: 28px; text-shadow: 0 0 10px #ff4757;">الألعاب النارية: تفاعلات باعثة للحرارة</h2>
+        <p style="font-size: 20px; line-height: 1.6; margin-bottom: 0;">تعتبر المفرقعات والألعاب النارية مثالاً حياً للتفاعلات الباعثة للحرارة، حيث يقوم النظام بتحرير طاقته وانبعاثها إلى المحيط الخارجي على شكل حرارة وضوء، مما يجعل التغير في الإنثالبي (ΔH) سالباً.</p>
+    </div>
+
+<script>
+const canvas = document.getElementById('fwCanvas');
+const ctx = canvas.getContext('2d');
+const startBtn = document.getElementById('startBtn');
+
+const bodyElement = document.body;
+const lightSwitchContainer = document.getElementById('lightSwitchContainer');
+const lightSwitchBtn = document.getElementById('lightSwitchBtn');
+const theCanvas = document.getElementById('fwCanvas');
+
+lightSwitchBtn.addEventListener('click', () => {
+    // 1. Change Theme
+    bodyElement.classList.remove('lab-light-theme');
+    bodyElement.classList.add('lab-dark-theme');
+    
+    // 2. Hide Switch UI
+    lightSwitchContainer.style.opacity = '0';
+    setTimeout(() => { lightSwitchContainer.style.display = 'none'; }, 500);
+
+    // 3. Reveal Canvas and Start Button after darkness falls
+    setTimeout(() => {
+        theCanvas.style.opacity = '1';
+        theCanvas.style.pointerEvents = 'auto'; // allow clicks if needed
+        startBtn.style.display = 'block';
+        document.getElementById('digitalDashboard').classList.add('visible');
+    }, 1000);
+});
+const infoBox = document.getElementById('infoBox');
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let particles = [];
+let rockets = [];
+let heatSpots = [];
+let energyArrows = [];
+
+class HeatSpot {
+    constructor(x, y) {
+        this.x = x; this.y = y;
+        this.life = 1.0;
+        this.radius = 150;
+    }
+    update() { this.life -= 0.015; }
+    draw(ctx) {
+        if(this.life <= 0) return;
+        const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
+        gradient.addColorStop(0, `rgba(255, 200, 0, ${this.life * 0.4})`); // Hot center
+        gradient.addColorStop(0.5, `rgba(255, 50, 0, ${this.life * 0.2})`); // Warm mid
+        gradient.addColorStop(1, `rgba(255, 0, 0, 0)`); // Fade edge
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+class EnergyArrow {
+    constructor(x, y) {
+        this.x = x; this.y = y;
+        this.angle = Math.random() * Math.PI * 2;
+        this.speed = 3 + Math.random() * 3;
+        this.life = 1.0;
+    }
+    update() {
+        this.x += Math.cos(this.angle) * this.speed;
+        this.y += Math.sin(this.angle) * this.speed;
+        this.life -= 0.02;
+    }
+    draw(ctx) {
+        if(this.life <= 0) return;
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);
+        
+        // Draw Arrow Line
+        ctx.strokeStyle = `rgba(255, 100, 0, ${this.life})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, 0); ctx.lineTo(30, 0);
+        ctx.moveTo(30, 0); ctx.lineTo(20, -5);
+        ctx.moveTo(30, 0); ctx.lineTo(20, 5);
+        ctx.stroke();
+
+        // Draw Text (ΔH -)
+        ctx.fillStyle = `rgba(255, 255, 255, ${this.life})`;
+        ctx.font = "bold 14px Arial";
+        ctx.fillText("ΔH -", 10, -10);
+        
+        ctx.restore();
+    }
+}
+
+let isActive = false;
+let infoShown = false;
+
+// Strictly alternating colors between Blue and Red/Orange
+const colors = ['#1e90ff', '#ff4757'];
+let explosionColorIndex = 0;
+
+class Rocket {
+    constructor(x, y, targetY) {
+        this.x = x; this.y = y; this.targetY = targetY;
+        this.speed = 8 + Math.random() * 4;
+        this.sparkTrails = [];
+    }
+    update() {
+        this.y -= this.speed;
+        
+        // Emitting sparks falling from the bottom of the stick
+        if (Math.random() > 0.2) {
+            this.sparkTrails.push({
+                x: this.x + (Math.random() * 4 - 2),
+                y: this.y + 40,
+                alpha: 1
+            });
+        }
+        
+        for (let i = this.sparkTrails.length - 1; i >= 0; i--) {
+            let spark = this.sparkTrails[i];
+            spark.y += 2;
+            spark.alpha -= 0.05;
+            if (spark.alpha <= 0) {
+                this.sparkTrails.splice(i, 1);
+            }
+        }
+        
+        return this.y <= this.targetY;
+    }
+    draw() {
+        // Draw falling sparks
+        for (let spark of this.sparkTrails) {
+            ctx.beginPath();
+            ctx.fillStyle = `rgba(255, 165, 0, ${spark.alpha})`;
+            ctx.arc(spark.x, spark.y, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        ctx.save();
+        ctx.translate(this.x, this.y);
+
+        // 1. Thin, long wooden stick
+        ctx.fillStyle = '#8B4513';
+        ctx.fillRect(-1.5, 10, 3, 30);
+
+        // 2. Cylindrical main body (Dark gradient)
+        let grad = ctx.createLinearGradient(-6, 0, 6, 0);
+        grad.addColorStop(0, '#222');
+        grad.addColorStop(0.5, '#555');
+        grad.addColorStop(1, '#222');
+        ctx.fillStyle = grad;
+        ctx.fillRect(-6, -15, 12, 25);
+
+        // 3. Pointed cone (Orange/Red)
+        ctx.fillStyle = '#ff4757';
+        ctx.beginPath();
+        ctx.moveTo(-6, -15);
+        ctx.lineTo(6, -15);
+        ctx.lineTo(0, -30);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.restore();
+    }
+}
+
+// (Keep the exact same Particle class and hexToRgb function from the previous code here)
+class Particle {
+    constructor(x, y, color) {
+        this.x = x; this.y = y; this.color = color;
+        const angle = Math.random() * Math.PI * 2;
+        const velocity = Math.random() * 6 + 2; 
+        this.vx = Math.cos(angle) * velocity;
+        this.vy = Math.sin(angle) * velocity;
+        this.history = [];
+        this.life = 1.0;
+        this.decay = Math.random() * 0.015 + 0.015;
+    }
+    update() {
+        this.history.push({x: this.x, y: this.y});
+        if(this.history.length > 8) this.history.shift();
+        this.x += this.vx; this.y += this.vy;
+        this.vy += 0.05; this.life -= this.decay;
+    }
+    draw() {
+        ctx.beginPath();
+        if(this.history.length > 0) {
+            ctx.moveTo(this.history[0].x, this.history[0].y);
+            for(let i=1; i<this.history.length; i++) ctx.lineTo(this.history[i].x, this.history[i].y);
+        }
+        ctx.lineTo(this.x, this.y);
+        ctx.strokeStyle = `rgba(${hexToRgb(this.color)}, ${this.life})`;
+        ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.stroke();
+    }
+}
+function hexToRgb(hex) {
+    let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '255,255,255';
+}
+
+// Dashboard State Variables
+let dashTemp = 25.0; // Starting room temp
+let dashEnthalpy = 0.0; // Starting enthalpy
+
+// Function to update the Digital Dashboard
+function updateDashboardData() {
+    // Calculate new values (Exothermic: Temp up, Enthalpy drops negative)
+    const tempInc = (Math.random() * 0.8) + 0.4; // Realistic micro-heating of the surroundings
+    const enthalpyDec = (Math.random() * 40) + 80; // Float 80.0 to 120.0
+    
+    dashTemp += tempInc;
+    dashEnthalpy -= enthalpyDec;
+
+    // Update DOM (formatting to 1 decimal place for tech look)
+    document.getElementById('dashTempDisplay').innerText = `${dashTemp.toFixed(1)} °C`;
+    document.getElementById('dashEnthalpyDisplay').innerText = `${dashEnthalpy.toFixed(1)} kJ`;
+
+    // Trigger Screen Flash Animation
+    const tempGroup = document.getElementById('tempMetric');
+    const enthalpyGroup = document.getElementById('enthalpyMetric');
+    
+    tempGroup.classList.remove('flash-update');
+    enthalpyGroup.classList.remove('flash-update');
+    void tempGroup.offsetWidth; // reflow
+    void enthalpyGroup.offsetWidth;
+    tempGroup.classList.add('flash-update');
+    enthalpyGroup.classList.add('flash-update');
+}
+
+function explode(x, y) {
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    // Existing particle generation
+    for(let i = 0; i < 150; i++) particles.push(new Particle(x, y, color));
+    
+    // NEW: 1. Add Thermal Spot (Camera effect)
+    heatSpots.push(new HeatSpot(x, y));
+
+    // NEW: 2. Shoot 5-8 Energy Arrows outward (ΔH -)
+    const arrowCount = 5 + Math.floor(Math.random() * 4);
+    for(let i = 0; i < arrowCount; i++) energyArrows.push(new EnergyArrow(x, y));
+
+    // NEW: 3. Trigger Screen Edge Pulse (Surroundings heating up)
+    const pulseLayer = document.createElement('div');
+    pulseLayer.className = 'thermal-pulse-overlay';
+    document.getElementById('thermalPulseContainer').appendChild(pulseLayer);
+    setTimeout(() => pulseLayer.remove(), 1200);
+
+    // Update Digital Dashboard
+    updateDashboardData();
+
+    // Existing info box logic (keep it)
+    if (!infoShown) {
+        infoBox.style.opacity = '1';
+        infoShown = true;
+    }
+}
+
+function animate() {
+    if(!isActive) return;
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // NEW: Thermal dissipation (Cooling effect over time)
+    if (typeof dashTemp !== 'undefined' && dashTemp > 25.0) {
+        dashTemp -= 0.02; // Gradual cooling per frame
+        if (dashTemp < 25.0) dashTemp = 25.0; // Don't drop below room temp
+        
+        const tempDisplay = document.getElementById('dashTempDisplay');
+        if (tempDisplay) {
+            tempDisplay.innerText = `${dashTemp.toFixed(1)} °C`;
+        }
+    }
+
+    // Draw and update heat spots
+    for(let i = heatSpots.length - 1; i >= 0; i--) {
+        heatSpots[i].draw(ctx);
+        heatSpots[i].update();
+        if(heatSpots[i].life <= 0) heatSpots.splice(i, 1);
+    }
+
+    // Draw and update energy arrows
+    for(let i = energyArrows.length - 1; i >= 0; i--) {
+        energyArrows[i].draw(ctx);
+        energyArrows[i].update();
+        if(energyArrows[i].life <= 0) energyArrows.splice(i, 1);
+    }
+
+    for(let i = rockets.length - 1; i >= 0; i--) {
+        rockets[i].draw();
+        if(rockets[i].update()) {
+            explode(rockets[i].x, rockets[i].y);
+            rockets.splice(i, 1);
+        }
+    }
+
+    for(let i = particles.length - 1; i >= 0; i--) {
+        particles[i].draw();
+        particles[i].update();
+        if(particles[i].life <= 0) particles.splice(i, 1);
+    }
+    requestAnimationFrame(animate);
+}
+
+startBtn.addEventListener('click', () => {
+    startBtn.style.display = 'none';
+    document.getElementById('digitalDashboard').classList.add('visible'); // FIX: Ensure visibility on subsequent runs
+    isActive = true;
+    infoShown = false;
+    animate();
+    
+    let count = 0;
+    const interval = setInterval(() => {
+        count++;
+        rockets.push(new Rocket(Math.random() * (canvas.width - 100) + 50, canvas.height, Math.random() * (canvas.height * 0.4) + 100));
+        if(count > 15) {
+            clearInterval(interval);
+            setTimeout(() => { 
+                isActive = false; 
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                startBtn.style.display = 'block';
+                infoBox.style.opacity = '0';
+                document.getElementById('digitalDashboard').classList.remove('visible');
+                dashTemp = 25.0;
+                dashEnthalpy = 0.0;
+                document.getElementById('dashTempDisplay').innerText = `25.0 °C`;
+                document.getElementById('dashEnthalpyDisplay').innerText = `0.0 kJ`;
+            }, 5000);
+        }
+    }, 300);
+});
+</script>
+</body>
+</html>
